@@ -1,0 +1,25 @@
+{
+  "name": "caos-em-casa",
+  "version": "0.1.0",
+  "description": "Caos em Casa: A Saga dos Pets — co-op caótico 3D (Babylon.js)",
+  "type": "module",
+  "scripts": {
+    "copy-havok": "node scripts/copy-havok.mjs",
+    "predev": "node scripts/copy-havok.mjs",
+    "prebuild": "node scripts/copy-havok.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^7.34.0",
+    "@babylonjs/gui": "^7.34.0",
+    "@babylonjs/havok": "^1.3.10",
+    "@babylonjs/loaders": "^7.34.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

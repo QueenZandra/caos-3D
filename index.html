@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Caos em Casa: A Saga dos Pets</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #1a1a2e;
+        font-family: "Nunito", "Segoe UI", sans-serif;
+      }
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+        outline: none;
+      }
+      #loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: linear-gradient(135deg, #ff6b35, #ff4d8d, #9b5de5);
+        z-index: 100;
+        transition: opacity 0.4s ease;
+      }
+      #loading .emoji {
+        font-size: 64px;
+        animation: bob 1s ease-in-out infinite;
+      }
+      #loading .title {
+        font-size: 28px;
+        font-weight: 900;
+        margin-top: 12px;
+      }
+      #loading .sub {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-top: 4px;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="emoji">🐾🏠🐾</div>
+      <div class="title">Caos em Casa</div>
+      <div class="sub">Carregando a bagunça…</div>
+    </div>
+    <canvas id="renderCanvas"></canvas>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

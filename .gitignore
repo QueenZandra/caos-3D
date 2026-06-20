@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+.vite/
+
+# Gerado por scripts/copy-havok.mjs (recriado em predev/prebuild)
+public/HavokPhysics.wasm
