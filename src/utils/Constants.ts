@@ -27,15 +27,18 @@ export enum GameState {
   CharSelect = "char_select",
   Phase1 = "phase1",
   Phase2 = "phase2",
+  Phase3 = "phase3",
   Result = "result",
 }
 
 /** Número de fases jogáveis implementadas. */
-export const TOTAL_PHASES = 2;
+export const TOTAL_PHASES = 3;
 
 /** Mapeia um número de fase para o estado de jogo correspondente. */
 export function phaseState(n: number): GameState {
-  return n === 2 ? GameState.Phase2 : GameState.Phase1;
+  if (n === 3) return GameState.Phase3;
+  if (n === 2) return GameState.Phase2;
+  return GameState.Phase1;
 }
 
 /** Câmera isométrica do GDD. */

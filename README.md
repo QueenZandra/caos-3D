@@ -68,6 +68,13 @@ atordoa quem chega perto; o **Latido do Sirius** assusta e faz os pássaros
 abandonarem os ninhos. Twist: um **urubu gigante** pousa e exige **2 pets juntos**
 para ser expulso.
 
+**Fase 3 — "A Rebelião das Almofadas"**: 24 almofadas com **rigidbody** espalhadas
+pela sala; rajadas de **vento** periódicas as empurram. Um **puff gigante** ganha
+vida e **persegue o pet mais próximo** — quando encosta numa almofada desprotegida,
+ela é destruída. Leve as almofadas para a **zona segura** (a cama) e mantenha pelo
+menos **12 intactas** por **120s**. A câmera **treme** quando o puff bate nas
+paredes; o **Latido do Sirius repele** o puff. Derrota: cair abaixo de 12 intactas.
+
 As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
@@ -125,7 +132,8 @@ src/
       — referências e prompts prontos em `public/assets/models/characters/*.reference.md`.
 - [x] Split-view automático no `CameraSystem` quando os pets se separam.
 - [x] **Fase 2 "Os Pássaros Abusados"** (ninhos em 3 estágios, gating de gatos, urubu).
-- [ ] Fases 3–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 3 "A Rebelião das Almofadas"** (rigidbodies, vento, puff que persegue, camera shake).
+- [ ] Fases 4–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.

@@ -10,6 +10,7 @@ import { PlayerCountScene } from "../scenes/PlayerCountScene";
 import { CharSelectScene } from "../scenes/CharSelectScene";
 import { Phase1Scene } from "../scenes/Phase1Scene";
 import { Phase2Scene } from "../scenes/Phase2Scene";
+import { Phase3Scene } from "../scenes/Phase3Scene";
 import { ResultScene } from "../scenes/ResultScene";
 
 /**
@@ -81,6 +82,8 @@ export class GameManager {
         return new Phase1Scene(this);
       case GameState.Phase2:
         return new Phase2Scene(this);
+      case GameState.Phase3:
+        return new Phase3Scene(this);
       case GameState.Result:
         return new ResultScene(this);
       default:

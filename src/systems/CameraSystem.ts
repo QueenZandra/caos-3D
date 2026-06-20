@@ -30,6 +30,9 @@ export class CameraSystem {
   readonly uiCamera: ArcRotateCamera;
   private scene: Scene;
   private split = false;
+  private shakeT = 0;
+  private shakeDur = 0;
+  private shakeMag = 0;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -88,13 +91,32 @@ export class CameraSystem {
 
     if (!this.split) {
       this.follow(this.camera, points, dt);
-      return;
+    } else {
+      // divide em 2 grupos pelos dois pets mais distantes (seeds)
+      const [groupA, groupB] = this.cluster(points);
+      this.follow(this.camera, groupA, dt);
+      this.follow(this.camB, groupB, dt);
     }
 
-    // divide em 2 grupos pelos dois pets mais distantes (seeds)
-    const [groupA, groupB] = this.cluster(points);
-    this.follow(this.camera, groupA, dt);
-    this.follow(this.camB, groupB, dt);
+    this.applyShake(dt);
+  }
+
+  /** Dispara um tremor de câmera (ex.: puff batendo na parede). */
+  shake(magnitude: number, duration: number): void {
+    this.shakeMag = Math.max(this.shakeMag, magnitude);
+    this.shakeDur = duration;
+    this.shakeT = duration;
+  }
+
+  private applyShake(dt: number): void {
+    if (this.shakeT <= 0) return;
+    this.shakeT -= dt;
+    const k = this.shakeMag * Math.max(0, this.shakeT / this.shakeDur);
+    const jitter = () => (Math.random() - 0.5) * 2 * k;
+    const offset = new Vector3(jitter(), jitter() * 0.5, jitter());
+    this.camera.setTarget(this.camera.getTarget().add(offset));
+    if (this.split) this.camB.setTarget(this.camB.getTarget().add(offset));
+    if (this.shakeT <= 0) this.shakeMag = 0;
   }
 
   private setSplit(on: boolean): void {
