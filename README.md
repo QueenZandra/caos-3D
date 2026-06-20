@@ -59,6 +59,17 @@ Os 4 pets com habilidades funcionais:
 Dificuldade adaptativa (`DifficultyScaler`): com menos jogadores, menos cartas,
 mais tempo e objetivo menor. Estrelas (⭐–⭐⭐⭐) por tempo restante e bagunça.
 
+**Fase 2 — "Os Pássaros Abusados"**: pássaros voam até pontos de ninho e os
+constroem em **3 estágios** (gravetos → forrado → ovos = permanente). Destrua os
+ninhos em construção (interagir por perto) antes que **5** fiquem permanentes;
+meta: destruir **8**. Ninhos **altos** (em arbustos altos) só os **gatos**
+(Minerva/Zoe) alcançam — divisão de papéis co-op. O pássaro-mãe **mergulha** e
+atordoa quem chega perto; o **Latido do Sirius** assusta e faz os pássaros
+abandonarem os ninhos. Twist: um **urubu gigante** pousa e exige **2 pets juntos**
+para ser expulso.
+
+As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
+
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
 duas, cada metade seguindo um grupo; ao se reaproximarem, volta a ser única.
 
@@ -110,9 +121,13 @@ src/
 - [x] Pipeline de carregamento de **modelos GLB** com fallback automático para placeholders
       (`src/utils/AssetLoader.ts`). Basta dropar os `.glb` em `public/assets/models/characters/`
       — ver `public/assets/README.md` para nomes e como gerar a partir das fotos.
-- [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender → Mixamo).
+- [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender → Mixamo)
+      — referências e prompts prontos em `public/assets/models/characters/*.reference.md`.
 - [x] Split-view automático no `CameraSystem` quando os pets se separam.
-- [ ] Fases 2–8 reaproveitando `GameScene`/sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 2 "Os Pássaros Abusados"** (ninhos em 3 estágios, gating de gatos, urubu).
+- [ ] Fases 3–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
+      câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
 - [ ] Áudio (latido, miado, SFX) e cutscenes (`CinematicScene`).
 

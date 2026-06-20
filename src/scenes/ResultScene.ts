@@ -4,7 +4,7 @@ import { Control } from "@babylonjs/gui/2D/controls/control";
 import type { Scene } from "@babylonjs/core/scene";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
-import { GameState } from "../utils/Constants";
+import { GameState, TOTAL_PHASES, phaseState } from "../utils/Constants";
 import { GameConfig } from "../utils/GameConfig";
 import { createMenuScene, MenuList, addTitle } from "./menuHelpers";
 
@@ -47,10 +47,18 @@ export class ResultScene implements SceneController {
     stats.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
     this.ui.addControl(stats);
 
+    const phase = GameConfig.phase;
+    const hasNext = win && phase < TOTAL_PHASES;
+
     this.list = new MenuList(win ? "#06D6A0" : "#FF6B35");
-    this.list.addButton(this.ui, "🔁  Jogar de novo", () => this.game.goTo(GameState.Phase1));
+    if (hasNext) {
+      this.list.addButton(this.ui, `➡️  Próxima fase (${phase + 1})`, () =>
+        this.game.goTo(phaseState(phase + 1)),
+      );
+    }
+    this.list.addButton(this.ui, "🔁  Repetir fase", () => this.game.goTo(phaseState(phase)));
     this.list.addButton(this.ui, "🏠  Menu principal", () => this.game.goTo(GameState.Menu));
-    this.list.layout(60);
+    this.list.layout(hasNext ? 40 : 60);
   }
 
   update(_dt: number): void {

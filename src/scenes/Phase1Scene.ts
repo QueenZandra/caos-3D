@@ -67,6 +67,7 @@ export class Phase1Scene implements SceneController {
     this.scene = new Scene(game.engine);
     this.scene.clearColor = Color4.FromHexString("#2B2B45FF");
     enablePhysics(this.scene, game.havok);
+    GameConfig.phase = 1;
 
     // dificuldade (DifficultyScaler do GDD)
     const d = GameConfig.difficulty;
@@ -307,10 +308,10 @@ export class Phase1Scene implements SceneController {
 
     // HUD
     this.hud.update({
+      objective: `📬 Cartas: ${this.collected} / ${this.goal}`,
       timeLeft: this.timeLeft,
-      collected: this.collected,
-      goal: this.goal,
-      chaos: onFloor / 16,
+      bar: onFloor / 16,
+      showCarry: true,
       players: this.players,
     });
 

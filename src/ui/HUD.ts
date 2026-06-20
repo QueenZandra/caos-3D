@@ -156,23 +156,31 @@ export class HUD {
   }
 
   update(opts: {
-    timeLeft: number;
-    collected: number;
-    goal: number;
-    chaos: number; // 0..1
+    objective: string;
+    bar: number; // 0..1
+    timeLeft?: number; // omitido = sem timer
+    barWarn?: boolean;
+    showCarry?: boolean;
     players: Player[];
   }): void {
-    this.timer.text = `${Math.ceil(opts.timeLeft)}`;
-    this.timer.color = opts.timeLeft <= 10 ? "#FF4D8D" : "#FFFFFF";
-    this.objective.text = `📬 Cartas: ${opts.collected} / ${opts.goal}`;
-    this.chaosFill.height = `${Math.round(Math.min(1, opts.chaos) * 100)}%`;
-    this.chaosFill.background = opts.chaos > 0.66 ? "#FF4D8D" : "#FF6B35";
+    if (opts.timeLeft === undefined) {
+      this.timer.isVisible = false;
+    } else {
+      this.timer.isVisible = true;
+      this.timer.text = `${Math.ceil(opts.timeLeft)}`;
+      this.timer.color = opts.timeLeft <= 10 ? "#FF4D8D" : "#FFFFFF";
+    }
+    this.objective.text = opts.objective;
+    const v = Math.round(Math.min(1, Math.max(0, opts.bar)) * 100);
+    this.chaosFill.height = `${v}%`;
+    this.chaosFill.background = opts.barWarn || opts.bar > 0.66 ? "#FF4D8D" : "#FF6B35";
 
     opts.players.forEach((p, i) => {
       const card = this.playerCards[i];
       if (!card) return;
       card.cooldown.width = `${Math.round(p.cooldownPct * 100)}%`;
-      card.carry.text = `📦 ${p.carrying}/${p.carryCapacity}`;
+      card.carry.isVisible = opts.showCarry ?? false;
+      if (opts.showCarry) card.carry.text = `📦 ${p.carrying}/${p.carryCapacity}`;
     });
 
     // textos flutuantes
