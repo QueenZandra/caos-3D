@@ -7,6 +7,7 @@ import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Player } from "../entities/Player";
+import { UI_LAYER } from "../utils/Constants";
 
 interface FloatText {
   text: TextBlock;
@@ -22,12 +23,25 @@ export class HUD {
   private chaosFill: Rectangle;
   private playerCards: { cooldown: Rectangle; carry: TextBlock; name: TextBlock }[] = [];
   private floats: FloatText[] = [];
+  private divider: Rectangle;
 
   constructor(
     private scene: Scene,
     players: Player[],
   ) {
     this.ui = AdvancedDynamicTexture.CreateFullscreenUI("hud", true, scene);
+    // renderiza o HUD apenas pela câmera de UI (tela cheia), nunca duplicado
+    // nas viewports do split-view.
+    if (this.ui.layer) this.ui.layer.layerMask = UI_LAYER;
+
+    // linha divisória do split-view (oculta por padrão)
+    this.divider = new Rectangle("split-divider");
+    this.divider.width = "4px";
+    this.divider.height = "100%";
+    this.divider.background = "#1A1A2E";
+    this.divider.thickness = 0;
+    this.divider.isVisible = false;
+    this.ui.addControl(this.divider);
 
     // timer (topo centro)
     this.timer = new TextBlock();
@@ -172,6 +186,11 @@ export class HUD {
         this.floats.splice(i, 1);
       }
     }
+  }
+
+  /** Mostra/oculta a linha divisória central do split-view. */
+  setSplit(on: boolean): void {
+    this.divider.isVisible = on;
   }
 
   /** Texto que sobe e some, ancorado numa posição 3D. */

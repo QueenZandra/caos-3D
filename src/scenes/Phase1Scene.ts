@@ -294,8 +294,9 @@ export class Phase1Scene implements SceneController {
     this.updateCarried();
     this.updateEffects(dt);
 
-    // câmera segue os pets
+    // câmera segue os pets (split-view automático quando se separam)
     this.cam.update(dt, this.players.map((p) => p.position));
+    this.hud.setSplit(this.cam.isSplit);
 
     // limpa cartas que caíram fora da arena (segurança)
     for (const l of this.letters) {

@@ -59,6 +59,9 @@ Os 4 pets com habilidades funcionais:
 Dificuldade adaptativa (`DifficultyScaler`): com menos jogadores, menos cartas,
 mais tempo e objetivo menor. Estrelas (⭐–⭐⭐⭐) por tempo restante e bagunça.
 
+**Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
+duas, cada metade seguindo um grupo; ao se reaproximarem, volta a ser única.
+
 ## 🏗️ Arquitetura
 
 ```
@@ -94,12 +97,16 @@ src/
 - **Toon shading** via `StandardMaterial` (cor chapada + emissive) e `renderOutline`
   nativo do Babylon, evitando dependências extras.
 - **Câmera**: isométrica fixa seguindo o centroide, com zoom-out conforme os pets se
-  afastam. *Split-view* (GDD) é a próxima evolução natural do `CameraSystem`.
+  afastam. **Split-view automático**: quando os pets se separam (espalhamento > 11
+  unidades, com histerese para voltar < 8) a tela divide em duas viewports, cada
+  uma seguindo um grupo de pets próximos (clusterização pelo par mais distante).
+  Uma câmera de UI dedicada (via `layerMask`) garante que o HUD renderize uma única
+  vez em tela cheia, sem duplicar nas viewports.
 
 ## 🗺️ Próximos passos (roadmap do GDD)
 
 - [ ] Trocar placeholders pelos modelos GLB dos pets (Passo 8 do GDD: foto → Meshy.ai → Blender → Mixamo).
-- [ ] Split-view automático no `CameraSystem` quando os pets se separam (>10 un.).
+- [x] Split-view automático no `CameraSystem` quando os pets se separam.
 - [ ] Fases 2–8 reaproveitando `GameScene`/sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
 - [ ] Áudio (latido, miado, SFX) e cutscenes (`CinematicScene`).

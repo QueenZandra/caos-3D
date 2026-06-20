@@ -38,3 +38,12 @@ export const CAMERA = {
 
 /** Alvo de performance. */
 export const TARGET_FPS = 60;
+
+/**
+ * Layer masks para separar mundo 3D da UI quando há múltiplas câmeras ativas
+ * (split-view). A câmera de gameplay usa a máscara padrão (não inclui o bit de
+ * UI); a câmera de UI usa só o bit de UI — assim o HUD renderiza uma única vez
+ * em tela cheia, sem duplicar nas viewports.
+ */
+export const GAMEPLAY_LAYER = 0x0fffffff;
+export const UI_LAYER = 0x20000000;
