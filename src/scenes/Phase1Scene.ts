@@ -165,7 +165,8 @@ export class Phase1Scene implements SceneController {
     ];
     GameConfig.players.forEach((slot, i) => {
       const p = createPlayer(this.scene, slot, spread[i] ?? new Vector3(0, 1, 0), this.hooks);
-      this.shadows.addShadowCaster(p.body);
+      p.registerShadows(this.shadows);
+      void p.loadModel(); // carrega GLB se existir; senão mantém o placeholder
       this.players.push(p);
     });
   }

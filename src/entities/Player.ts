@@ -3,14 +3,18 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { PhysicsAggregate } from "@babylonjs/core/Physics/v2/physicsAggregate";
 import { PhysicsShapeType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
+import type { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import type { AnimationGroup } from "@babylonjs/core/Animations/animationGroup";
 
 import type { CharacterDef } from "../utils/CharacterData";
 import type { PlayerSlot } from "../utils/GameConfig";
 import type { FrameInput } from "../systems/InputManager";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
+import { tryLoadModel } from "../utils/AssetLoader";
 
 /** Ganchos que a fase fornece para as habilidades afetarem o mundo. */
 export interface AbilityHooks {
@@ -21,27 +25,43 @@ export interface AbilityHooks {
 
 const PLAYER_RADIUS = 0.45;
 const PLAYER_HEIGHT = 1.2;
+/** offset do "pé" do modelo até o centro da cápsula de colisão */
+const FEET_OFFSET = -(PLAYER_HEIGHT / 2 + PLAYER_RADIUS);
+/** altura-alvo para auto-escalar qualquer GLB importado */
+const TARGET_VISUAL_HEIGHT = 2.0;
 
 /**
- * Classe base dos pets. Usa um placeholder primitivo (cápsula + focinho)
- * com toon shading; o modelo GLB pode ser plugado depois sem mudar a lógica.
+ * Classe base dos pets.
+ *
+ * Separa colisão de visual: a cápsula `body` é o collider físico (invisível);
+ * `visualRoot` carrega o que aparece — um placeholder primitivo OU o modelo GLB
+ * (carregado via loadModel()). Como a lógica não depende do mesh visual, basta
+ * fornecer o .glb que ele substitui o placeholder sem outras mudanças.
  */
 export class Player {
   readonly def: CharacterDef;
   readonly slot: PlayerSlot;
-  readonly root: TransformNode;
-  readonly body: Mesh;
-  protected snout: Mesh;
+  readonly body: Mesh; // collider (invisível)
+  readonly visualRoot: TransformNode;
   readonly aggregate: PhysicsAggregate;
   protected scene: Scene;
   protected hooks: AbilityHooks;
+
+  private placeholder: Mesh;
+  private placeholderParts: Mesh[] = [];
+  private modelMeshes: AbstractMesh[] = [];
+  private shadows?: ShadowGenerator;
+
+  // animações (quando há GLB com AnimationGroups, ex.: Mixamo)
+  private animIdle?: AnimationGroup;
+  private animWalk?: AnimationGroup;
+  private animCurrent?: AnimationGroup;
 
   // estado
   protected facing = new Vector3(0, 0, 1);
   carrying = 0;
   carryCapacity = 1;
   speedMultiplier = 1;
-  /** lentidão de terreno (slowzone) — 1 = normal, <1 = lento */
   slowFactor = 1;
   stunnedFor = 0;
   protected cooldownRemaining = 0;
@@ -59,41 +79,92 @@ export class Player {
     this.slot = slot;
     this.hooks = hooks;
 
-    this.root = new TransformNode(`player_${def.id}`, scene);
-
-    // corpo (cápsula)
+    // collider (cápsula invisível com física)
     this.body = MeshBuilder.CreateCapsule(
-      `${def.id}_body`,
+      `${def.id}_collider`,
       { radius: PLAYER_RADIUS, height: PLAYER_HEIGHT },
       scene,
     );
     this.body.position.copyFrom(spawn);
-    const mat = createToonMaterial(scene, def.color, def.id);
-    this.body.material = mat;
-    applyOutline(this.body, 0.05);
+    this.body.isVisible = false;
 
-    // focinho — indica a direção que o pet encara
-    this.snout = MeshBuilder.CreateSphere(
-      `${def.id}_snout`,
-      { diameter: 0.35 },
-      scene,
-    );
-    this.snout.material = createToonMaterial(scene, "#FFF8F0", `${def.id}_snout`);
-    applyOutline(this.snout, 0.03);
-    this.snout.parent = this.body;
-    this.snout.position = new Vector3(0, 0.15, PLAYER_RADIUS + 0.1);
-
-    // física: cápsula com massa, rotação travada
     this.aggregate = new PhysicsAggregate(
       this.body,
       PhysicsShapeType.CAPSULE,
       { mass: 1, friction: 0.4, restitution: 0 },
       scene,
     );
-    // trava rotação para o pet não tombar
     this.aggregate.body.setMassProperties({ inertia: Vector3.Zero() });
     this.aggregate.body.setLinearDamping(0.6);
     this.aggregate.body.setAngularDamping(1);
+
+    // raiz visual — controlada por nós (posição/rotação), não pela física
+    this.visualRoot = new TransformNode(`${def.id}_visual`, scene);
+    this.placeholder = this.buildPlaceholder();
+  }
+
+  /** Placeholder primitivo (cápsula + focinho) sob a visualRoot. */
+  private buildPlaceholder(): Mesh {
+    const cap = MeshBuilder.CreateCapsule(
+      `${this.def.id}_ph`,
+      { radius: PLAYER_RADIUS, height: PLAYER_HEIGHT },
+      this.scene,
+    );
+    cap.material = createToonMaterial(this.scene, this.def.color, this.def.id);
+    applyOutline(cap, 0.05);
+    cap.parent = this.visualRoot;
+    cap.position.setAll(0);
+
+    const snout = MeshBuilder.CreateSphere(`${this.def.id}_snout`, { diameter: 0.35 }, this.scene);
+    snout.material = createToonMaterial(this.scene, "#FFF8F0", `${this.def.id}_snout`);
+    applyOutline(snout, 0.03);
+    snout.parent = this.visualRoot;
+    snout.position = new Vector3(0, 0.15, PLAYER_RADIUS + 0.1);
+
+    this.placeholderParts = [cap, snout];
+    return cap;
+  }
+
+  /**
+   * Carrega o modelo GLB do personagem (assíncrono). Se o arquivo não existir,
+   * mantém o placeholder. Pode ser chamado fire-and-forget.
+   */
+  async loadModel(): Promise<void> {
+    const result = await tryLoadModel(this.scene, this.def.model);
+    if (!result || result.meshes.length === 0) return;
+
+    const root = result.meshes[0];
+    // auto-escala pela altura do bounding box
+    const { min, max } = root.getHierarchyBoundingVectors();
+    const h = max.y - min.y;
+    if (h > 0.01) root.scaling.setAll(TARGET_VISUAL_HEIGHT / h);
+    root.parent = this.visualRoot;
+    root.position = new Vector3(0, FEET_OFFSET, 0);
+
+    this.modelMeshes = result.meshes;
+    for (const m of result.meshes) {
+      this.shadows?.addShadowCaster(m);
+    }
+
+    // animações (Mixamo): idle/walk por nome
+    const groups = result.animationGroups ?? [];
+    groups.forEach((g) => g.stop());
+    this.animIdle = groups.find((g) => /idle/i.test(g.name)) ?? groups[0];
+    this.animWalk = groups.find((g) => /walk|run/i.test(g.name)) ?? this.animIdle;
+    if (this.animIdle) {
+      this.animIdle.start(true);
+      this.animCurrent = this.animIdle;
+    }
+
+    // esconde o placeholder
+    this.placeholderParts.forEach((p) => p.setEnabled(false));
+  }
+
+  /** Registra os meshes visuais como projetores de sombra. */
+  registerShadows(sg: ShadowGenerator): void {
+    this.shadows = sg;
+    for (const p of this.placeholderParts) sg.addShadowCaster(p);
+    for (const m of this.modelMeshes) sg.addShadowCaster(m);
   }
 
   get position(): Vector3 {
@@ -113,6 +184,12 @@ export class Player {
     this.stunnedFor = Math.max(this.stunnedFor, seconds);
   }
 
+  /** Transparência visual (usado pela Furtividade da Zoe). */
+  setVisualAlpha(alpha: number): void {
+    for (const p of this.placeholderParts) p.visibility = alpha;
+    for (const m of this.modelMeshes) m.visibility = alpha;
+  }
+
   /** Atualiza por frame. cameraForward = direção "frente" no plano do chão. */
   update(dt: number, input: FrameInput, cameraForward: Vector3): void {
     if (this.cooldownRemaining > 0) this.cooldownRemaining -= dt;
@@ -120,35 +197,49 @@ export class Player {
       this.abilityActiveFor -= dt;
       if (this.abilityActiveFor <= 0) this.onAbilityEnd();
     }
+
+    let moving = false;
     if (this.stunnedFor > 0) {
       this.stunnedFor -= dt;
       this.aggregate.body.setLinearVelocity(new Vector3(0, this.currentVy(), 0));
-      this.body.material && this.flashStun();
-      return;
-    }
-
-    // base relativa à câmera isométrica
-    const fwd = new Vector3(cameraForward.x, 0, cameraForward.z).normalize();
-    const right = Vector3.Cross(Vector3.Up(), fwd).normalize();
-    let move = right.scale(input.moveX).add(fwd.scale(input.moveY));
-
-    const speed = this.def.speed * this.speedMultiplier * this.slowFactor;
-    if (move.lengthSquared() > 0.0001) {
-      move = move.normalize();
-      this.facing.copyFrom(move);
-      // orienta o focinho
-      this.body.rotation.y = Math.atan2(move.x, move.z);
-      this.aggregate.body.setLinearVelocity(
-        new Vector3(move.x * speed, this.currentVy(), move.z * speed),
-      );
+      this.flashStun();
     } else {
-      const vy = this.currentVy();
-      this.aggregate.body.setLinearVelocity(new Vector3(0, vy, 0));
+      const fwd = new Vector3(cameraForward.x, 0, cameraForward.z).normalize();
+      const right = Vector3.Cross(Vector3.Up(), fwd).normalize();
+      let move = right.scale(input.moveX).add(fwd.scale(input.moveY));
+
+      const speed = this.def.speed * this.speedMultiplier * this.slowFactor;
+      if (move.lengthSquared() > 0.0001) {
+        move = move.normalize();
+        this.facing.copyFrom(move);
+        moving = true;
+        this.aggregate.body.setLinearVelocity(
+          new Vector3(move.x * speed, this.currentVy(), move.z * speed),
+        );
+      } else {
+        this.aggregate.body.setLinearVelocity(new Vector3(0, this.currentVy(), 0));
+      }
+
+      if (input.ability && this.cooldownRemaining <= 0) {
+        this.cooldownRemaining = this.def.cooldown;
+        this.onAbilityStart();
+      }
     }
 
-    if (input.ability && this.cooldownRemaining <= 0) {
-      this.cooldownRemaining = this.def.cooldown;
-      this.onAbilityStart();
+    // sincroniza visual com o collider
+    this.visualRoot.position.copyFrom(this.body.position);
+    if (moving) {
+      this.visualRoot.rotation.y = Math.atan2(this.facing.x, this.facing.z);
+    }
+    this.updateAnim(moving);
+  }
+
+  private updateAnim(moving: boolean): void {
+    const target = moving ? this.animWalk : this.animIdle;
+    if (target && target !== this.animCurrent) {
+      this.animCurrent?.stop();
+      target.start(true);
+      this.animCurrent = target;
     }
   }
 
@@ -157,9 +248,8 @@ export class Player {
   }
 
   private flashStun(): void {
-    // pisca o emissive para feedback de atordoamento
-    const mat = this.body.material as { emissiveColor?: Color3 };
-    if (mat.emissiveColor) {
+    const mat = this.placeholder.material as { emissiveColor?: Color3 } | null;
+    if (mat?.emissiveColor) {
       const t = (Math.sin(performance.now() * 0.02) + 1) * 0.5;
       mat.emissiveColor = Color3.FromHexString(this.def.color).scale(0.2 + t * 0.4);
     }
@@ -171,15 +261,15 @@ export class Player {
   }
   protected onAbilityEnd(): void {}
 
-  /** Marca a habilidade como ativa por X segundos (para buffs temporários). */
   protected setAbilityActive(seconds: number): void {
     this.abilityActiveFor = seconds;
   }
 
   dispose(): void {
     this.aggregate.dispose();
-    this.snout.dispose();
+    this.placeholderParts.forEach((p) => p.dispose());
+    this.modelMeshes.forEach((m) => m.dispose());
+    this.visualRoot.dispose();
     this.body.dispose();
-    this.root.dispose();
   }
 }

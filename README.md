@@ -90,10 +90,12 @@ src/
 
 ### Decisões de implementação
 
-- **Placeholders primitivos** (cápsulas/caixas com toon shading + contorno) no lugar
-  dos modelos GLB. Como toda a lógica usa `Player`/`InteractiveObject`, basta trocar
-  o mesh por `SceneLoader.ImportMeshAsync(...)` quando os modelos do Meshy.ai/Tripo3D
-  existirem — sem reescrever gameplay.
+- **Modelos GLB com fallback**: o `Player` separa collider (cápsula física invisível)
+  de visual (`visualRoot`). No início, mostra um **placeholder primitivo**; em paralelo,
+  `loadModel()` tenta carregar o `.glb` do personagem e, se existir, o substitui
+  (auto-escala + animações `idle`/`walk` do Mixamo + sombras). Se o arquivo não existir,
+  segue com o placeholder — nada quebra. Toda a lógica de gameplay é indiferente a qual
+  visual está em uso.
 - **Toon shading** via `StandardMaterial` (cor chapada + emissive) e `renderOutline`
   nativo do Babylon, evitando dependências extras.
 - **Câmera**: isométrica fixa seguindo o centroide, com zoom-out conforme os pets se
@@ -105,7 +107,10 @@ src/
 
 ## 🗺️ Próximos passos (roadmap do GDD)
 
-- [ ] Trocar placeholders pelos modelos GLB dos pets (Passo 8 do GDD: foto → Meshy.ai → Blender → Mixamo).
+- [x] Pipeline de carregamento de **modelos GLB** com fallback automático para placeholders
+      (`src/utils/AssetLoader.ts`). Basta dropar os `.glb` em `public/assets/models/characters/`
+      — ver `public/assets/README.md` para nomes e como gerar a partir das fotos.
+- [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender → Mixamo).
 - [x] Split-view automático no `CameraSystem` quando os pets se separam.
 - [ ] Fases 2–8 reaproveitando `GameScene`/sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
