@@ -13,7 +13,7 @@ import type { SceneController } from "./SceneController";
 import { GameState } from "../utils/Constants";
 import { GameConfig, type PlayerSlot } from "../utils/GameConfig";
 import { CHAR_ORDER, CHARACTERS } from "../utils/CharacterData";
-import { createMenuScene, addTitle } from "./menuHelpers";
+import { createMenuScene, addTitle, type MenuPet } from "./menuHelpers";
 import { createToonMaterial } from "../utils/Visual";
 
 const PLAYER_HEX = ["#06D6A0", "#FF4D8D", "#9B5DE5", "#FF6B35"];
@@ -26,7 +26,7 @@ const PLAYER_HEX = ["#06D6A0", "#FF4D8D", "#9B5DE5", "#FF6B35"];
 export class CharSelectScene implements SceneController {
   readonly scene: Scene;
   private ui: AdvancedDynamicTexture;
-  private pets: Mesh[];
+  private pets: MenuPet[];
   private pedestals: Mesh[] = [];
 
   private cursor = 0;
@@ -44,7 +44,7 @@ export class CharSelectScene implements SceneController {
     // pedestais sob cada pet
     pets.forEach((p, i) => {
       const ped = MeshBuilder.CreateCylinder(`ped_${i}`, { diameter: 1.6, height: 0.3 }, scene);
-      ped.position = new Vector3(p.position.x, 0.15, 0);
+      ped.position = new Vector3(p.root.position.x, 0.15, 0);
       ped.material = createToonMaterial(scene, "#2A2A45", `ped_${i}`);
       this.pedestals.push(ped);
     });
@@ -98,9 +98,9 @@ export class CharSelectScene implements SceneController {
 
     this.pets.forEach((p, i) => {
       const taken = this.takenBy[i] !== null;
-      p.visibility = taken ? 0.35 : 1;
+      p.setVisibility(taken ? 0.35 : 1);
       const focused = i === this.cursor;
-      p.scaling.setAll(focused && !taken ? 1.25 : 1);
+      p.root.scaling.setAll(focused && !taken ? 1.25 : 1);
       const ped = this.pedestals[i];
       const ownerHex = taken ? PLAYER_HEX[this.takenBy[i]!] : focused ? PLAYER_HEX[this.currentPlayer] : "#2A2A45";
       (ped.material as StandardMaterial).emissiveColor = Color3.FromHexString(ownerHex);
