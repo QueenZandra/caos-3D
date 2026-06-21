@@ -95,6 +95,12 @@ a **barra de barulho** antes da moto passar — barra cheia = moto afugentada. O
 **Latido do Sirius** enche rápido. A câmera **treme** a cada passagem. Meta:
 afugentar **15** em 2 minutos, terminando com a **carreata final em V** (5 motos).
 
+**Fase 7 — "Caos Total"**: vários sistemas ao mesmo tempo — cartas se acumulando,
+invasores indo ao **núcleo** e o **puff gigante** perseguindo os pets. Um **medidor
+de caos** sobe enquanto há bagunça e cai quando você limpa; se chegar a 100%, você
+perde. **Sobreviva 3 minutos**. Tem **radar/minimapa** no HUD e, nos últimos 30s,
+o **sprint final** com a tela pulsando em vermelho e spawns acelerados.
+
 As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
@@ -156,7 +162,8 @@ src/
 - [x] **Fase 4 "O Roubo Épico da Cozinha"** (cascata física, preview vermelho, boost co-op).
 - [x] **Fase 5 "O Vizinho Invasor"** (invasores com IA, galinha caótica, boss Gato Gigante).
 - [x] **Fase 6 "A Moto do Terror"** (janelas, barra de barulho, carreata final em V).
-- [ ] Fases 7–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 7 "Caos Total"** (mashup de sistemas, medidor de caos, radar, sprint final).
+- [ ] Fase 8 "Operação Perdão" (clímax: ações fofas para zerar a raiva dos donos).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.

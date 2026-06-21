@@ -14,6 +14,7 @@ import { Phase3Scene } from "../scenes/Phase3Scene";
 import { Phase4Scene } from "../scenes/Phase4Scene";
 import { Phase5Scene } from "../scenes/Phase5Scene";
 import { Phase6Scene } from "../scenes/Phase6Scene";
+import { Phase7Scene } from "../scenes/Phase7Scene";
 import { ResultScene } from "../scenes/ResultScene";
 
 /**
@@ -93,6 +94,8 @@ export class GameManager {
         return new Phase5Scene(this);
       case GameState.Phase6:
         return new Phase6Scene(this);
+      case GameState.Phase7:
+        return new Phase7Scene(this);
       case GameState.Result:
         return new ResultScene(this);
       default:

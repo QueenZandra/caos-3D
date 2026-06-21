@@ -3,6 +3,7 @@ import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
 import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
 import { Control } from "@babylonjs/gui/2D/controls/control";
 import { StackPanel } from "@babylonjs/gui/2D/controls/stackPanel";
+import { Ellipse } from "@babylonjs/gui/2D/controls/ellipse";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
@@ -24,6 +25,9 @@ export class HUD {
   private playerCards: { cooldown: Rectangle; carry: TextBlock; name: TextBlock }[] = [];
   private floats: FloatText[] = [];
   private divider: Rectangle;
+  private radarPanel?: Rectangle;
+  private radarDots: Ellipse[] = [];
+  private dangerOverlay?: Rectangle;
 
   constructor(
     private scene: Scene,
@@ -42,6 +46,17 @@ export class HUD {
     this.divider.thickness = 0;
     this.divider.isVisible = false;
     this.ui.addControl(this.divider);
+
+    // overlay de perigo (sprint final) — vermelho pulsante, não bloqueia input
+    this.dangerOverlay = new Rectangle("danger");
+    this.dangerOverlay.width = "100%";
+    this.dangerOverlay.height = "100%";
+    this.dangerOverlay.background = "#FF1E3C";
+    this.dangerOverlay.thickness = 0;
+    this.dangerOverlay.alpha = 0;
+    this.dangerOverlay.isVisible = false;
+    this.dangerOverlay.isPointerBlocker = false;
+    this.ui.addControl(this.dangerOverlay);
 
     // timer (topo centro)
     this.timer = new TextBlock();
@@ -175,6 +190,10 @@ export class HUD {
     this.chaosFill.height = `${v}%`;
     this.chaosFill.background = opts.barWarn || opts.bar > 0.66 ? "#FF4D8D" : "#FF6B35";
 
+    if (this.dangerOverlay?.isVisible) {
+      this.dangerOverlay.alpha = 0.12 + 0.14 * (Math.sin(performance.now() * 0.008) + 1) * 0.5;
+    }
+
     opts.players.forEach((p, i) => {
       const card = this.playerCards[i];
       if (!card) return;
@@ -199,6 +218,50 @@ export class HUD {
   /** Mostra/oculta a linha divisória central do split-view. */
   setSplit(on: boolean): void {
     this.divider.isVisible = on;
+  }
+
+  /** Liga/desliga o overlay vermelho de perigo (sprint final). */
+  setDanger(on: boolean): void {
+    if (this.dangerOverlay) this.dangerOverlay.isVisible = on;
+  }
+
+  /** Atualiza o radar/minimapa com pontos do mundo (x,z em [-half,half]). */
+  radar(half: number, dots: { x: number; z: number; hex: string }[]): void {
+    const SIZE = 140;
+    const R = SIZE / 2 - 8;
+    if (!this.radarPanel) {
+      this.radarPanel = new Rectangle("radar");
+      this.radarPanel.width = `${SIZE}px`;
+      this.radarPanel.height = `${SIZE}px`;
+      this.radarPanel.cornerRadius = 12;
+      this.radarPanel.background = "#1A1A2EAA";
+      this.radarPanel.color = "#FFFFFF44";
+      this.radarPanel.thickness = 2;
+      this.radarPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+      this.radarPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+      this.radarPanel.left = "-20px";
+      this.radarPanel.top = "20px";
+      this.ui.addControl(this.radarPanel);
+    }
+    // pool de pontos
+    while (this.radarDots.length < dots.length) {
+      const d = new Ellipse(`dot_${this.radarDots.length}`);
+      d.width = "10px";
+      d.height = "10px";
+      d.thickness = 0;
+      this.radarPanel.addControl(d);
+      this.radarDots.push(d);
+    }
+    this.radarDots.forEach((d, i) => {
+      if (i >= dots.length) {
+        d.isVisible = false;
+        return;
+      }
+      d.isVisible = true;
+      d.background = dots[i].hex;
+      d.left = `${(dots[i].x / half) * R}px`;
+      d.top = `${(dots[i].z / half) * R}px`;
+    });
   }
 
   /** Texto que sobe e some, ancorado numa posição 3D. */
