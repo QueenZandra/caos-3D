@@ -82,6 +82,13 @@ despencam; quem cai no chão **quebra** (preview em vermelho avisa quais vão ca
 ao lado de outro pet e use a **ação conjunta (△/Y)**. Entregue as comidas no
 **prato**. Meta: 10 comidas com no máximo **5 quebradas**.
 
+**Fase 5 — "O Vizinho Invasor"**: invasores entram por **vários pontos** do muro e
+avançam para a **casa**. Expulse-os chegando perto e **interagindo** (o **Latido do
+Sirius** expulsa vários de uma vez); os "durões" precisam de 2 acertos. Uma
+**galinha perdida** corre pelo quintal e atordoa quem ela encosta. O **Gato Gigante
+(boss)** exige **2 pets juntos** por ~1,5s para ser expulso. Meta: expulsar 20 com
+menos de **3** entrando na casa. (O split-view ajuda a cobrir pontos distantes.)
+
 As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
@@ -141,7 +148,8 @@ src/
 - [x] **Fase 2 "Os Pássaros Abusados"** (ninhos em 3 estágios, gating de gatos, urubu).
 - [x] **Fase 3 "A Rebelião das Almofadas"** (rigidbodies, vento, puff que persegue, camera shake).
 - [x] **Fase 4 "O Roubo Épico da Cozinha"** (cascata física, preview vermelho, boost co-op).
-- [ ] Fases 5–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 5 "O Vizinho Invasor"** (invasores com IA, galinha caótica, boss Gato Gigante).
+- [ ] Fases 6–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
