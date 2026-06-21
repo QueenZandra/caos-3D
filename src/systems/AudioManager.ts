@@ -20,6 +20,7 @@ export type SfxName =
   | "deliver"
   | "broke"
   | "stun"
+  | "step"
   | "win"
   | "lose";
 
@@ -242,6 +243,19 @@ class AudioManager {
     this.saveSettings();
   }
 
+  /** Abaixa a música por `seconds` e volta ao normal (ducking sob fanfarras). */
+  private duckMusic(seconds: number): void {
+    if (!this.musicGain || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    const full = Math.max(0.0001, this.musicVolume);
+    const low = Math.max(0.0001, this.musicVolume * 0.25);
+    const g = this.musicGain.gain;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(full, now);
+    g.linearRampToValueAtTime(low, now + 0.08);
+    g.linearRampToValueAtTime(full, now + seconds);
+  }
+
   // ─── SFX ───────────────────────────────────────────────────────────────
   /** Oscilador único com envelope ADSR curto. */
   private blip(
@@ -335,15 +349,24 @@ class AudioManager {
         this.blip(880, 0.2, "sine", 0.3, t, -500);
         this.noise(0.2, 0.25, 2000, t);
         break;
+      case "step": {
+        // patinha no chão: tick curto e grave, com leve variação de tom
+        const f = 150 + Math.random() * 60;
+        this.blip(f, 0.05, "sine", 0.16, t, -50);
+        this.noise(0.04, 0.1, 1400, t);
+        break;
+      }
       case "win": {
-        // fanfarra
+        // fanfarra (abaixa a música por baixo)
+        this.duckMusic(1.6);
         const seq = [60, 64, 67, 72, 76];
         seq.forEach((m, i) => this.blip(midi(m), 0.22, "square", 0.4, t + i * 0.12));
         this.blip(midi(79), 0.5, "square", 0.4, t + seq.length * 0.12);
         break;
       }
       case "lose": {
-        // descida triste
+        // descida triste (abaixa a música por baixo)
+        this.duckMusic(1.4);
         const seq = [60, 58, 55, 51];
         seq.forEach((m, i) => this.blip(midi(m), 0.3, "triangle", 0.4, t + i * 0.18, -20));
         break;

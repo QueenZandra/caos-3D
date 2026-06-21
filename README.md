@@ -209,6 +209,7 @@ Feito:
 - [x] **Pausa real** (Retomar / Reiniciar / Menu), congelando física e lógica.
 - [x] **Progressão salva** em `localStorage` (estrelas + seleção/desbloqueio de fases).
 - [x] **Opções de volume** (geral/música/efeitos + mudo), persistidas.
+- [x] **Passos** dos pets (ritmo conforme a velocidade) e **ducking** da música nas fanfarras.
 
 Pendente / a aprimorar:
 
@@ -217,7 +218,7 @@ Pendente / a aprimorar:
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos, câmera dramática
       na entrada do urubu, voo mais orgânico.
-- [ ] Sons de **passos/ambiente** por fase e *ducking* da música nas fanfarras.
+- [ ] **Ambiente** sonoro por fase (pássaros, rua, cozinha…).
 - [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
       shake/flash, daltonismo).
 - [ ] **Testes** automatizados, **lint/format** e *code-splitting* do bundle.

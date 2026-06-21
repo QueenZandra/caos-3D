@@ -15,6 +15,7 @@ import type { PlayerSlot } from "../utils/GameConfig";
 import type { FrameInput } from "../systems/InputManager";
 import { tryLoadModel } from "../utils/AssetLoader";
 import { buildPetModel } from "./PetModel";
+import { Audio } from "../systems/AudioManager";
 
 /** Ganchos que a fase fornece para as habilidades afetarem o mundo. */
 export interface AbilityHooks {
@@ -68,6 +69,8 @@ export class Player {
   boostedFor = 0;
   protected cooldownRemaining = 0;
   protected abilityActiveFor = 0;
+  /** tempo até o próximo passo (s); ritmo acompanha a velocidade efetiva */
+  private stepTimer = 0;
 
   constructor(
     scene: Scene,
@@ -230,7 +233,22 @@ export class Player {
     if (moving) {
       this.visualRoot.rotation.y = Math.atan2(this.facing.x, this.facing.z);
     }
+    this.updateSteps(moving, dt);
     this.updateAnim(moving);
+  }
+
+  /** Toca passos no ritmo da velocidade efetiva enquanto o pet anda. */
+  private updateSteps(moving: boolean, dt: number): void {
+    if (!moving) {
+      this.stepTimer = 0; // próximo passo assim que recomeçar a andar
+      return;
+    }
+    this.stepTimer -= dt;
+    if (this.stepTimer <= 0) {
+      Audio.sfx("step");
+      const eff = this.def.speed * this.speedMultiplier * this.slowFactor;
+      this.stepTimer = Math.max(0.14, 1.6 / Math.max(1, eff));
+    }
   }
 
   private updateAnim(moving: boolean): void {
