@@ -77,7 +77,8 @@ export class GameManager {
       // pausa real (só em fases): congela lógica e física; Esc/Start alterna
       if (this.activeState.startsWith("phase") && this.current) {
         if (this.input.pauseEdge()) {
-          this.paused ? this.resume() : this.pause();
+          if (this.paused) this.resume();
+          else this.pause();
         }
       }
 
