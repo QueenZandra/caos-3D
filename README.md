@@ -21,7 +21,15 @@ Build de produção:
 ```bash
 npm run build    # tsc --noEmit + gera /dist (pronto para deploy estático)
 npm run preview  # serve o build localmente
-npm run typecheck
+```
+
+Qualidade / DX:
+
+```bash
+npm run typecheck     # tsc --noEmit
+npm test              # Vitest (lógica pura: Progress, DifficultyScaler)
+npm run lint          # ESLint (flat config + typescript-eslint)
+npm run format        # Prettier --write em src
 ```
 
 > O binário WASM do Havok é copiado automaticamente para `public/` pelos scripts
@@ -214,6 +222,7 @@ Feito:
 - [x] **Opções de volume** (geral/música/efeitos + mudo), persistidas.
 - [x] **Passos** dos pets (ritmo conforme a velocidade) e **ducking** da música nas fanfarras.
 - [x] **Ambiente sonoro por fase** (pássaros, rua, cozinha, brisa, galinha…).
+- [x] **Higiene técnica**: testes (Vitest), ESLint/Prettier e *code-splitting* (Babylon/GUI/jogo).
 
 Pendente / a aprimorar:
 
@@ -224,7 +233,7 @@ Pendente / a aprimorar:
       na entrada do urubu, voo mais orgânico.
 - [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
       shake/flash, daltonismo).
-- [ ] **Testes** automatizados, **lint/format** e *code-splitting* do bundle.
+- [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).
 
 ## 🚀 Deploy
 
