@@ -9,6 +9,8 @@ import {
 } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
 import { Audio } from "../systems/AudioManager";
+import { burst } from "../utils/Particles";
+import { PALETTE } from "../utils/Constants";
 
 let counter = 0;
 
@@ -61,6 +63,7 @@ export class Cushion {
     this.carrier = playerIndex;
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
     Audio.sfx("pickup");
+    burst(this.mesh.getScene(), this.mesh.position, PALETTE.yellow, { count: 5, size: 0.12 });
   }
 
   followCarrier(pos: Vector3, stackIndex: number): void {
@@ -80,6 +83,11 @@ export class Cushion {
     if (this.state === "destroyed") return;
     this.state = "destroyed";
     Audio.sfx("broke");
+    burst(this.mesh.getScene(), this.mesh.position, PALETTE.cream, {
+      count: 12,
+      size: 0.14,
+      speed: 3,
+    });
     this.dispose();
   }
 

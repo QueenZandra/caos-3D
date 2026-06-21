@@ -11,6 +11,8 @@ import {
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
 import { Audio } from "../systems/AudioManager";
+import { burst } from "../utils/Particles";
+import { PALETTE } from "../utils/Constants";
 
 let counter = 0;
 
@@ -68,6 +70,7 @@ export class Food {
     this.setHighlight(false);
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
     Audio.sfx("pickup");
+    burst(this.mesh.getScene(), this.mesh.position, PALETTE.yellow, { count: 5, size: 0.12 });
   }
 
   followCarrier(pos: Vector3, stackIndex: number): void {
@@ -86,6 +89,7 @@ export class Food {
     if (this.state === "collected" || this.state === "broken") return;
     this.state = "collected";
     Audio.sfx("deliver");
+    burst(this.mesh.getScene(), this.mesh.position, PALETTE.teal, { count: 12, size: 0.16 });
     this.dispose();
   }
 
@@ -93,6 +97,7 @@ export class Food {
     if (this.state === "broken") return;
     this.state = "broken";
     Audio.sfx("broke");
+    burst(this.mesh.getScene(), this.mesh.position, "#C0392B", { count: 10, size: 0.14, speed: 3 });
     // achata e fica vermelho (visual de quebrado)
     this.mesh.scaling.y = 0.2;
     (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString("#C0392B");

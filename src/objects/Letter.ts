@@ -9,6 +9,8 @@ import {
 } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
 import { Audio } from "../systems/AudioManager";
+import { burst } from "../utils/Particles";
+import { PALETTE } from "../utils/Constants";
 
 let counter = 0;
 
@@ -56,6 +58,7 @@ export class Letter {
     this.carrier = playerIndex;
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
     Audio.sfx("pickup");
+    burst(this.mesh.getScene(), this.mesh.position, PALETTE.yellow, { count: 5, size: 0.12 });
   }
 
   /** Reposiciona a carta sobre o portador. stackIndex empilha múltiplas. */

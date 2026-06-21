@@ -37,6 +37,8 @@ export class GameManager {
   private activeState: GameState = GameState.Menu;
   private paused = false;
   private pauseMenu: PauseMenu | null = null;
+  private fade: HTMLElement | null = null;
+  private transitioning = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -46,6 +48,7 @@ export class GameManager {
       antialias: true,
     });
     this.input = new InputManager();
+    this.fade = document.getElementById("fade");
 
     window.addEventListener("resize", () => this.engine.resize());
 
@@ -124,9 +127,25 @@ export class GameManager {
     this.pauseMenu = null;
   }
 
-  /** Solicita transição (efetivada no início do próximo frame). */
+  /**
+   * Solicita transição de cena com um fade para preto. A primeira cena (sem
+   * `current`) entra sem fade. Chamadas durante uma transição são ignoradas.
+   */
   goTo(state: GameState): void {
-    this.nextState = state;
+    if (!this.current || !this.fade) {
+      this.nextState = state; // primeira cena: imediata
+      return;
+    }
+    if (this.transitioning) return;
+    this.transitioning = true;
+    this.fade.style.opacity = "1";
+    window.setTimeout(() => {
+      this.nextState = state; // swap no início do próximo frame (tela já preta)
+      window.setTimeout(() => {
+        if (this.fade) this.fade.style.opacity = "0";
+        this.transitioning = false;
+      }, 90);
+    }, 220);
   }
 
   private swap(state: GameState): void {
