@@ -21,12 +21,13 @@ export class ResultScene implements SceneController {
     const r = GameConfig.lastResult;
     const win = r?.win ?? false;
     const stars = r?.stars ?? 0;
+    const champion = win && GameConfig.phase >= TOTAL_PHASES;
 
     this.ui = AdvancedDynamicTexture.CreateFullscreenUI("resultUI", true, scene);
     addTitle(
       this.ui,
-      win ? "🎉 Vitória!" : "😿 Quase lá…",
-      r ? `Fase: ${r.phaseName}` : "",
+      champion ? "🏆 Campanha Completa!" : win ? "🎉 Vitória!" : "😿 Quase lá…",
+      champion ? "Os pets salvaram o dia (de novo)!" : r ? `Fase: ${r.phaseName}` : "",
     );
 
     const starsTb = new TextBlock();

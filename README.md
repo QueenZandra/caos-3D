@@ -4,9 +4,9 @@ Co-op caótico **3D** estilo Overcooked!, para **2–4 jogadores locais**, rodan
 navegador com **Babylon.js + TypeScript + Vite** e física **Havok**.
 
 > Os donos saíram. Os pets — Sirius, Belatriz, Minerva e Zoe — viram heróis e
-> espalham o caos pela casa. Esta é a **fatia vertical** do jogo: uma fase
-> completa e jogável de ponta a ponta, com toda a arquitetura base pronta para
-> as demais fases do GDD.
+> espalham o caos pela casa. **Campanha completa: as 8 fases do GDD**, jogáveis de
+> ponta a ponta (Menu → seleção → fases encadeadas → final), com placeholders
+> primitivos e pipeline pronto para os modelos GLB dos pets.
 
 ## ▶️ Como rodar
 
@@ -101,7 +101,14 @@ de caos** sobe enquanto há bagunça e cai quando você limpa; se chegar a 100%,
 perde. **Sobreviva 3 minutos**. Tem **radar/minimapa** no HUD e, nos últimos 30s,
 o **sprint final** com a tela pulsando em vermelho e spawns acelerados.
 
-As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
+**Fase 8 — "Operação Perdão"**: os donos chegaram com **raiva** (duas barras). Leve
+cada pet ao dono certo e use a **ação fofa** (interagir) para reduzir a raiva —
+**Sirius** é eficaz com o Dono 1, **Belatriz** com o Dono 2, **Minerva** com ambos,
+**Zoe** dá um golpe único forte. Quando todos fazem fofura juntos, dispara o
+**SUPER FOFO** 💖. Zere as duas barras em 90s → **abraço com confetes**.
+
+A campanha completa é encadeada: ao vencer, a tela de resultado oferece **➡️ Próxima
+fase**, até o **🏆 final**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
 duas, cada metade seguindo um grupo; ao se reaproximarem, volta a ser única.
@@ -163,7 +170,8 @@ src/
 - [x] **Fase 5 "O Vizinho Invasor"** (invasores com IA, galinha caótica, boss Gato Gigante).
 - [x] **Fase 6 "A Moto do Terror"** (janelas, barra de barulho, carreata final em V).
 - [x] **Fase 7 "Caos Total"** (mashup de sistemas, medidor de caos, radar, sprint final).
-- [ ] Fase 8 "Operação Perdão" (clímax: ações fofas para zerar a raiva dos donos).
+- [x] **Fase 8 "Operação Perdão"** (ações fofas por dono, SUPER FOFO, confetes).
+- [x] **Campanha completa: tutorial-base + 8 fases encadeadas.**
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
