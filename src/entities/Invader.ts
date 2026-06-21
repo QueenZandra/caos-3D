@@ -33,7 +33,11 @@ export class Invader {
     applyOutline(this.mesh, 0.05);
 
     // focinho para indicar direção
-    this.snout = MeshBuilder.CreateBox(`isnout_${counter}`, { width: 0.25, height: 0.25, depth: 0.4 }, scene);
+    this.snout = MeshBuilder.CreateBox(
+      `isnout_${counter}`,
+      { width: 0.25, height: 0.25, depth: 0.4 },
+      scene,
+    );
     this.snout.material = createToonMaterial(scene, "#2A2A35", `isnout_${counter}`);
     this.snout.parent = this.mesh;
     this.snout.position = new Vector3(0, 0.1, 0.55);

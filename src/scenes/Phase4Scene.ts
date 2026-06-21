@@ -97,7 +97,11 @@ export class Phase4Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildKitchen(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#D7DCE3", "tile");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#AAB4C0").scale(0.25);
@@ -120,7 +124,11 @@ export class Phase4Scene implements SceneController {
 
     // bancadas (colliders) — os gatos sobem; cães precisam de boost
     COUNTERS.forEach((c, i) => {
-      const counter = MeshBuilder.CreateBox(`counter_${i}`, { width: 3.4, height: COUNTER_TOP, depth: 3.0 }, this.scene);
+      const counter = MeshBuilder.CreateBox(
+        `counter_${i}`,
+        { width: 3.4, height: COUNTER_TOP, depth: 3.0 },
+        this.scene,
+      );
       counter.position.set(c.x, COUNTER_TOP / 2, c.z);
       counter.material = createToonMaterial(this.scene, "#B5926A", `counter_${i}`);
       applyOutline(counter, 0.04);
@@ -129,25 +137,41 @@ export class Phase4Scene implements SceneController {
     });
 
     // prato de entrega (zona no chão)
-    const plate = MeshBuilder.CreateCylinder("plate", { diameter: PLATE_R * 1.6, height: 0.2, tessellation: 24 }, this.scene);
+    const plate = MeshBuilder.CreateCylinder(
+      "plate",
+      { diameter: PLATE_R * 1.6, height: 0.2, tessellation: 24 },
+      this.scene,
+    );
     plate.position.set(PLATE.x, 0.1, PLATE.z);
     const pmat = createToonMaterial(this.scene, PALETTE.teal, "plate");
     (pmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.5);
     plate.material = pmat;
     applyOutline(plate, 0.04);
-    const ring = MeshBuilder.CreateTorus("plateRing", { diameter: PLATE_R * 2, thickness: 0.16, tessellation: 28 }, this.scene);
+    const ring = MeshBuilder.CreateTorus(
+      "plateRing",
+      { diameter: PLATE_R * 2, thickness: 0.16, tessellation: 28 },
+      this.scene,
+    );
     ring.position.set(PLATE.x, 0.12, PLATE.z);
     const rmat = createToonMaterial(this.scene, PALETTE.teal, "plateRing");
     (rmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.8);
     ring.material = rmat;
 
     // geladeira com bolo brilhante (decorativo)
-    const fridge = MeshBuilder.CreateBox("fridge", { width: 2.4, height: 4, depth: 1.6 }, this.scene);
+    const fridge = MeshBuilder.CreateBox(
+      "fridge",
+      { width: 2.4, height: 4, depth: 1.6 },
+      this.scene,
+    );
     fridge.position.set(HALF - 1.4, 2, 8);
     fridge.material = createToonMaterial(this.scene, "#E8EEF2", "fridge");
     applyOutline(fridge, 0.05);
     new PhysicsAggregate(fridge, PhysicsShapeType.BOX, { mass: 0 }, this.scene);
-    const cake = MeshBuilder.CreateCylinder("cake", { diameter: 0.9, height: 0.6, tessellation: 16 }, this.scene);
+    const cake = MeshBuilder.CreateCylinder(
+      "cake",
+      { diameter: 0.9, height: 0.6, tessellation: 16 },
+      this.scene,
+    );
     cake.position.set(HALF - 2.4, 1.2, 7.4);
     const cmat = createToonMaterial(this.scene, PALETTE.pink, "cake");
     (cmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.pink);
@@ -206,7 +230,9 @@ export class Phase4Scene implements SceneController {
 
   private tryBoost(player: Player, index: number): void {
     if (isCat(player.def.id)) return; // gatos não precisam
-    const helper = this.players.some((o, j) => j !== index && this.horiz(o.position, player.position) < BOOST_RANGE);
+    const helper = this.players.some(
+      (o, j) => j !== index && this.horiz(o.position, player.position) < BOOST_RANGE,
+    );
     if (helper) {
       player.boost(BOOST_TIME);
       this.hud.floatingText(player.position, "BOOST! 🤝", PALETTE.yellow);
@@ -231,7 +257,11 @@ export class Phase4Scene implements SceneController {
       player.carrying++;
     } else {
       const highNear = this.foods.some(
-        (f) => f.state === "free" && f.high && !this.canGrabHigh(player) && this.horiz(f.position, player.position) < PICKUP_H,
+        (f) =>
+          f.state === "free" &&
+          f.high &&
+          !this.canGrabHigh(player) &&
+          this.horiz(f.position, player.position) < PICKUP_H,
       );
       if (highNear) this.hud.floatingText(player.position, "🐱 ou BOOST (△/Y)!", PALETTE.purple);
     }
@@ -283,7 +313,10 @@ export class Phase4Scene implements SceneController {
       if (!hovered) continue;
       for (const f of this.foods) {
         if (f.state !== "free" || f === hovered) continue;
-        if (this.horiz(f.position, hovered.position) < 0.6 && f.position.y > hovered.position.y + 0.2) {
+        if (
+          this.horiz(f.position, hovered.position) < 0.6 &&
+          f.position.y > hovered.position.y + 0.2
+        ) {
           f.setHighlight(true);
         }
       }
@@ -322,7 +355,10 @@ export class Phase4Scene implements SceneController {
     }
     this.foods = this.foods.filter((f) => f.state !== "collected");
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     this.hud.update({

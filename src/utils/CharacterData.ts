@@ -28,8 +28,7 @@ export const CHARACTERS: Record<CharId, CharacterDef> = {
     species: "Cachorro",
     color: PALETTE.teal,
     ability: "Latido Poderoso",
-    abilityDesc:
-      "Onda sonora 3D que atordoa inimigos num raio de 3 unidades por 2s.",
+    abilityDesc: "Onda sonora 3D que atordoa inimigos num raio de 3 unidades por 2s.",
     speed: 5,
     strength: 4,
     cooldown: 5,
@@ -68,8 +67,7 @@ export const CHARACTERS: Record<CharId, CharacterDef> = {
     species: "Gata",
     color: PALETTE.orange,
     ability: "Furtividade",
-    abilityDesc:
-      "Fica semi-transparente por 3s; inimigos não detectam. Onda de susto ao voltar.",
+    abilityDesc: "Fica semi-transparente por 3s; inimigos não detectam. Onda de susto ao voltar.",
     speed: 7,
     strength: 2,
     cooldown: 7,

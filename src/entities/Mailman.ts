@@ -15,20 +15,12 @@ export class Mailman {
   stunnedFor = 0;
 
   constructor(scene: Scene, position: Vector3) {
-    this.mesh = MeshBuilder.CreateCapsule(
-      "mailman",
-      { radius: 0.5, height: 1.6 },
-      scene,
-    );
+    this.mesh = MeshBuilder.CreateCapsule("mailman", { radius: 0.5, height: 1.6 }, scene);
     this.mesh.position.copyFrom(position);
     this.mesh.material = createToonMaterial(scene, "#3A6EA5", "mailman");
     applyOutline(this.mesh, 0.05);
 
-    this.hat = MeshBuilder.CreateCylinder(
-      "mailman_hat",
-      { diameter: 0.7, height: 0.25 },
-      scene,
-    );
+    this.hat = MeshBuilder.CreateCylinder("mailman_hat", { diameter: 0.7, height: 0.25 }, scene);
     this.hat.material = createToonMaterial(scene, PALETTE.dark, "mailman_hat");
     this.hat.parent = this.mesh;
     this.hat.position = new Vector3(0, 0.95, 0);

@@ -16,7 +16,14 @@ export class Motorcycle {
   private speed: number;
   fleeing = false;
 
-  constructor(scene: Scene, startX: number, z: number, dir: number, speed: number, colorHex: string) {
+  constructor(
+    scene: Scene,
+    startX: number,
+    z: number,
+    dir: number,
+    speed: number,
+    colorHex: string,
+  ) {
     counter++;
     this.dir = dir;
     this.speed = speed;
@@ -25,19 +32,31 @@ export class Motorcycle {
     this.root.position.set(startX, 0.6, z);
     this.root.rotation.y = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
 
-    const body = MeshBuilder.CreateBox(`motobody_${counter}`, { width: 1.8, height: 0.6, depth: 0.6 }, scene);
+    const body = MeshBuilder.CreateBox(
+      `motobody_${counter}`,
+      { width: 1.8, height: 0.6, depth: 0.6 },
+      scene,
+    );
     body.material = createToonMaterial(scene, colorHex, `moto_${counter}`);
     applyOutline(body, 0.04);
     body.parent = this.root;
     body.position.y = 0.2;
 
-    const rider = MeshBuilder.CreateCapsule(`rider_${counter}`, { radius: 0.3, height: 0.9 }, scene);
+    const rider = MeshBuilder.CreateCapsule(
+      `rider_${counter}`,
+      { radius: 0.3, height: 0.9 },
+      scene,
+    );
     rider.material = createToonMaterial(scene, "#2A2A35", `rider_${counter}`);
     rider.parent = this.root;
     rider.position.set(-0.2, 0.7, 0);
 
     for (const wx of [-0.6, 0.6]) {
-      const wheel = MeshBuilder.CreateCylinder(`wheel_${counter}_${wx}`, { diameter: 0.7, height: 0.2, tessellation: 12 }, scene);
+      const wheel = MeshBuilder.CreateCylinder(
+        `wheel_${counter}_${wx}`,
+        { diameter: 0.7, height: 0.2, tessellation: 12 },
+        scene,
+      );
       wheel.material = createToonMaterial(scene, "#1A1A2E", `wheel_${counter}`);
       wheel.parent = this.root;
       wheel.rotation.z = Math.PI / 2;

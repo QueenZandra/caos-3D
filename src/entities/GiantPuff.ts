@@ -19,7 +19,11 @@ export class GiantPuff {
   alive = false;
 
   constructor(scene: Scene, spawn: Vector3, color: string) {
-    this.mesh = MeshBuilder.CreateSphere("giantPuff", { diameter: RADIUS * 2, segments: 12 }, scene);
+    this.mesh = MeshBuilder.CreateSphere(
+      "giantPuff",
+      { diameter: RADIUS * 2, segments: 12 },
+      scene,
+    );
     this.mesh.position.copyFrom(spawn);
     this.mesh.material = createToonMaterial(scene, color, "giantPuff");
     applyOutline(this.mesh, 0.07);

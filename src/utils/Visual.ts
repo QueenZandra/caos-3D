@@ -8,11 +8,7 @@ import type { Mesh } from "@babylonjs/core/Meshes/mesh";
  * para o look cartoon do Overcooked!. O contorno é aplicado por mesh
  * (applyOutline) usando o renderOutline nativo do Babylon.
  */
-export function createToonMaterial(
-  scene: Scene,
-  hex: string,
-  name = "toon",
-): StandardMaterial {
+export function createToonMaterial(scene: Scene, hex: string, name = "toon"): StandardMaterial {
   const mat = new StandardMaterial(`${name}_${hex}`, scene);
   const c = Color3.FromHexString(hex);
   mat.diffuseColor = c;

@@ -10,8 +10,7 @@ async function boot(): Promise<void> {
   } catch (err) {
     console.error("Falha ao iniciar o jogo:", err);
     if (loading) {
-      loading.querySelector(".sub")!.textContent =
-        "Erro ao carregar. Veja o console.";
+      loading.querySelector(".sub")!.textContent = "Erro ao carregar. Veja o console.";
       return;
     }
   }

@@ -121,12 +121,20 @@ export class Phase8Scene implements SceneController {
     this.performing = this.players.map(() => 0);
 
     this.hud = new HUD(this.scene, this.players);
-    this.hud.floatingText(new Vector3(0, 3, -HALF + 4), "Os donos chegaram… façam fofura! 🥺", PALETTE.yellow);
+    this.hud.floatingText(
+      new Vector3(0, 3, -HALF + 4),
+      "Os donos chegaram… façam fofura! 🥺",
+      PALETTE.yellow,
+    );
   }
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildRoom(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#9A6B5A", "floor");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#7A4F44").scale(0.3);
@@ -149,10 +157,22 @@ export class Phase8Scene implements SceneController {
 
     // bagunça acumulada (decorativa) — a casa destruída
     for (let i = 0; i < 14; i++) {
-      const junk = MeshBuilder.CreateBox(`junk_${i}`, { width: 0.6, height: 0.3, depth: 0.6 }, this.scene);
-      junk.position.set((Math.random() - 0.5) * ARENA * 0.8, 0.2, (Math.random() - 0.5) * ARENA * 0.6 + 2);
+      const junk = MeshBuilder.CreateBox(
+        `junk_${i}`,
+        { width: 0.6, height: 0.3, depth: 0.6 },
+        this.scene,
+      );
+      junk.position.set(
+        (Math.random() - 0.5) * ARENA * 0.8,
+        0.2,
+        (Math.random() - 0.5) * ARENA * 0.6 + 2,
+      );
       junk.rotation.y = Math.random() * Math.PI;
-      junk.material = createToonMaterial(this.scene, [PALETTE.pink, PALETTE.blue, PALETTE.yellow][i % 3], `junk_${i}`);
+      junk.material = createToonMaterial(
+        this.scene,
+        [PALETTE.pink, PALETTE.blue, PALETTE.yellow][i % 3],
+        `junk_${i}`,
+      );
       applyOutline(junk, 0.02);
     }
 
@@ -172,7 +192,12 @@ export class Phase8Scene implements SceneController {
   }
 
   private spawnPlayers(): void {
-    const spread = [new Vector3(-3, 1, 4), new Vector3(3, 1, 4), new Vector3(-1, 1, 6), new Vector3(1, 1, 6)];
+    const spread = [
+      new Vector3(-3, 1, 4),
+      new Vector3(3, 1, 4),
+      new Vector3(-1, 1, 6),
+      new Vector3(1, 1, 6),
+    ];
     GameConfig.players.forEach((slot, i) => {
       const p = createPlayer(this.scene, slot, spread[i] ?? new Vector3(0, 1, 5), this.hooks);
       p.registerShadows(this.shadows);
@@ -238,13 +263,36 @@ export class Phase8Scene implements SceneController {
 
   // ─── Confete / desfecho ─────────────────────────────────────
   private spawnConfetti(): void {
-    const colors = [PALETTE.orange, PALETTE.pink, PALETTE.yellow, PALETTE.teal, PALETTE.purple, PALETTE.blue];
+    const colors = [
+      PALETTE.orange,
+      PALETTE.pink,
+      PALETTE.yellow,
+      PALETTE.teal,
+      PALETTE.purple,
+      PALETTE.blue,
+    ];
     for (let i = 0; i < 60; i++) {
-      const c = MeshBuilder.CreateBox(`confetti_${i}`, { width: 0.25, height: 0.25, depth: 0.05 }, this.scene);
-      c.position.set((Math.random() - 0.5) * 6, 8 + Math.random() * 3, -HALF + 4 + (Math.random() - 0.5) * 4);
+      const c = MeshBuilder.CreateBox(
+        `confetti_${i}`,
+        { width: 0.25, height: 0.25, depth: 0.05 },
+        this.scene,
+      );
+      c.position.set(
+        (Math.random() - 0.5) * 6,
+        8 + Math.random() * 3,
+        -HALF + 4 + (Math.random() - 0.5) * 4,
+      );
       c.material = createToonMaterial(this.scene, colors[i % colors.length], `confetti_${i}`);
-      const agg = new PhysicsAggregate(c, PhysicsShapeType.BOX, { mass: 0.05, restitution: 0.4 }, this.scene);
-      agg.body.applyImpulse(new Vector3((Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6), c.position);
+      const agg = new PhysicsAggregate(
+        c,
+        PhysicsShapeType.BOX,
+        { mass: 0.05, restitution: 0.4 },
+        this.scene,
+      );
+      agg.body.applyImpulse(
+        new Vector3((Math.random() - 0.5) * 0.6, 0.2, (Math.random() - 0.5) * 0.6),
+        c.position,
+      );
     }
   }
 
@@ -258,7 +306,11 @@ export class Phase8Scene implements SceneController {
       this.cam.shake(0.4, 0.4);
       this.hud.floatingText(new Vector3(0, 3.5, -HALF + 4), "ABRAÇO EM GRUPO! ❤️🎉", PALETTE.teal);
     } else {
-      this.hud.floatingText(new Vector3(0, 3.5, -HALF + 4), "…de castigo no quarto 😔", PALETTE.purple);
+      this.hud.floatingText(
+        new Vector3(0, 3.5, -HALF + 4),
+        "…de castigo no quarto 😔",
+        PALETTE.purple,
+      );
     }
   }
 
@@ -289,7 +341,10 @@ export class Phase8Scene implements SceneController {
 
     if (this.resolving) {
       this.resolveTimer -= dt;
-      this.cam.update(dt, this.players.map((p) => p.position));
+      this.cam.update(
+        dt,
+        this.players.map((p) => p.position),
+      );
       if (this.resolveTimer <= 0) this.commitResult();
       return;
     }
@@ -311,7 +366,10 @@ export class Phase8Scene implements SceneController {
     this.trySuperFofo();
     this.updateOwnerColors();
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     const avg = (this.anger[0] + this.anger[1]) / 2;

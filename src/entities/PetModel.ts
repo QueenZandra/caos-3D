@@ -104,12 +104,7 @@ export function buildPetModel(
   const parts: Mesh[] = [];
   let counter = 0;
 
-  const piece = (
-    mesh: Mesh,
-    hex: string,
-    pos: Vector3,
-    outline = 0.03,
-  ): Mesh => {
+  const piece = (mesh: Mesh, hex: string, pos: Vector3, outline = 0.03): Mesh => {
     mesh.material = createToonMaterial(scene, hex, `${def.id}_p${counter++}`);
     if (outline > 0) applyOutline(mesh, outline);
     mesh.parent = parent;
@@ -135,11 +130,7 @@ export function buildPetModel(
 
   // máscara escura ao redor dos olhos/focinho (Belatriz) ou só focinho claro
   const snoutDia = look.species === "dog" ? 0.42 : 0.3;
-  const snout = piece(
-    sphere("snout", snoutDia),
-    look.belly,
-    new Vector3(0, 0.42, 0.62),
-  );
+  const snout = piece(sphere("snout", snoutDia), look.belly, new Vector3(0, 0.42, 0.62));
   snout.scaling = new Vector3(1, 0.85, 1);
 
   // nariz
@@ -154,11 +145,7 @@ export function buildPetModel(
   // ── orelhas ────────────────────────────────────────────────────────────────
   for (const s of [-1, 1]) {
     if (look.ears === "floppy") {
-      const ear = piece(
-        sphere("ear", 0.34),
-        look.furDark,
-        new Vector3(0.34 * s, 0.62, 0.08),
-      );
+      const ear = piece(sphere("ear", 0.34), look.furDark, new Vector3(0.34 * s, 0.62, 0.08));
       ear.scaling = new Vector3(0.55, 1.25, 0.4);
       ear.rotation.z = -0.5 * s; // caídas para os lados
     } else {
@@ -176,33 +163,21 @@ export function buildPetModel(
   // ── patas (4) ───────────────────────────────────────────────────────────────
   for (const sx of [-1, 1]) {
     for (const sz of [-1, 1]) {
-      const leg = MeshBuilder.CreateCapsule(
-        `${def.id}_leg`,
-        { radius: 0.13, height: 0.5 },
-        scene,
-      );
+      const leg = MeshBuilder.CreateCapsule(`${def.id}_leg`, { radius: 0.13, height: 0.5 }, scene);
       piece(leg, look.belly, new Vector3(0.24 * sx, -0.62, 0.26 * sz));
     }
   }
 
   // ── cauda ────────────────────────────────────────────────────────────────
   if (look.tail === "plume") {
-    const tail = piece(
-      sphere("tail", 0.6),
-      look.fur,
-      new Vector3(0, 0.1, -0.6),
-    );
+    const tail = piece(sphere("tail", 0.6), look.fur, new Vector3(0, 0.1, -0.6));
     tail.scaling = new Vector3(0.55, 1.0, 0.55);
     tail.rotation.x = 0.7; // levantada
   } else if (look.tail === "short") {
     const tail = piece(sphere("tail", 0.32), look.fur, new Vector3(0, -0.05, -0.62));
     tail.scaling = new Vector3(0.9, 0.9, 1.1);
   } else {
-    const tail = MeshBuilder.CreateCapsule(
-      `${def.id}_tail`,
-      { radius: 0.06, height: 0.75 },
-      scene,
-    );
+    const tail = MeshBuilder.CreateCapsule(`${def.id}_tail`, { radius: 0.06, height: 0.75 }, scene);
     piece(tail, look.fur, new Vector3(0, 0.05, -0.6));
     tail.rotation.x = 0.9; // ergue a ponta (vibe felina)
   }

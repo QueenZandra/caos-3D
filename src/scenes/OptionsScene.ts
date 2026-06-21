@@ -46,9 +46,21 @@ export class OptionsScene implements SceneController {
     addTitle(this.ui, "Opções", "↑ ↓ seleciona · ← → ajusta · Confirmar · Esc volta");
 
     this.rows = [
-      this.makeVolume("🔊  Volume geral", () => Audio.volumes.master, (v) => Audio.setMasterVolume(v)),
-      this.makeVolume("🎵  Música", () => Audio.volumes.music, (v) => Audio.setMusicVolume(v)),
-      this.makeVolume("💥  Efeitos", () => Audio.volumes.sfx, (v) => Audio.setSfxVolume(v)),
+      this.makeVolume(
+        "🔊  Volume geral",
+        () => Audio.volumes.master,
+        (v) => Audio.setMasterVolume(v),
+      ),
+      this.makeVolume(
+        "🎵  Música",
+        () => Audio.volumes.music,
+        (v) => Audio.setMusicVolume(v),
+      ),
+      this.makeVolume(
+        "💥  Efeitos",
+        () => Audio.volumes.sfx,
+        (v) => Audio.setSfxVolume(v),
+      ),
       this.makeRow("🔇  Mudo", "toggle", {
         toggle: () => Audio.toggleMute(),
         state: () => (Audio.isMuted ? "Sim" : "Não"),

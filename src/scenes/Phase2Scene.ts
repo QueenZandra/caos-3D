@@ -124,7 +124,11 @@ export class Phase2Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildYard(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#5FA05F", "grass");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#4C8C4C").scale(0.3);
@@ -147,8 +151,17 @@ export class Phase2Scene implements SceneController {
     mk("wS", ARENA, 0.5, 0, -HALF);
 
     // árvores decorativas nos cantos
-    [[-11, -11], [11, 11], [-11, 11], [11, -11]].forEach(([x, z], i) => {
-      const trunk = MeshBuilder.CreateCylinder(`trunk_${i}`, { diameter: 0.6, height: 3 }, this.scene);
+    [
+      [-11, -11],
+      [11, 11],
+      [-11, 11],
+      [11, -11],
+    ].forEach(([x, z], i) => {
+      const trunk = MeshBuilder.CreateCylinder(
+        `trunk_${i}`,
+        { diameter: 0.6, height: 3 },
+        this.scene,
+      );
       trunk.position.set(x, 1.5, z);
       trunk.material = createToonMaterial(this.scene, "#6B4226", `trunk_${i}`);
       const crown = MeshBuilder.CreateSphere(`crown_${i}`, { diameter: 3.5 }, this.scene);
@@ -161,7 +174,11 @@ export class Phase2Scene implements SceneController {
   private buildNests(): void {
     SPOTS.forEach((s, i) => {
       // arbusto
-      const bush = MeshBuilder.CreateSphere(`bush_${i}`, { diameter: 1.8, segments: 8 }, this.scene);
+      const bush = MeshBuilder.CreateSphere(
+        `bush_${i}`,
+        { diameter: 1.8, segments: 8 },
+        this.scene,
+      );
       bush.scaling.y = s.h / 1.8 + 0.3;
       bush.position.set(s.x, (s.h * bush.scaling.y) / 2, s.z);
       bush.material = createToonMaterial(this.scene, s.cat ? "#2E7D4F" : "#57B368", `bush_${i}`);
@@ -191,7 +208,9 @@ export class Phase2Scene implements SceneController {
 
   // ─── Pássaros ───────────────────────────────────────────────
   private availableSpot(): number {
-    const targeted = new Set(this.birds.filter((b) => b.state !== "leaving").map((b) => b.nestIndex));
+    const targeted = new Set(
+      this.birds.filter((b) => b.state !== "leaving").map((b) => b.nestIndex),
+    );
     const candidates = this.nests
       .map((n, i) => ({ n, i }))
       .filter(({ n, i }) => n.state === "empty" && !targeted.has(i));
@@ -253,7 +272,9 @@ export class Phase2Scene implements SceneController {
             break;
           }
           // mãe mergulha em quem se aproxima
-          const victim = this.players.findIndex((p) => horiz(p.position, nest.position) < DIVE_TRIGGER && !p.isStunned);
+          const victim = this.players.findIndex(
+            (p) => horiz(p.position, nest.position) < DIVE_TRIGGER && !p.isStunned,
+          );
           if (victim >= 0) {
             b.diveTarget = victim;
             b.state = "diving";
@@ -307,7 +328,11 @@ export class Phase2Scene implements SceneController {
     if (!best) {
       // dica quando há ninho alto perto e o pet não é gato
       const highNear = this.nests.some(
-        (n) => n.state === "building" && n.requiresCat && !isCat(player.def.id) && horiz(player.position, n.position) < DESTROY_H,
+        (n) =>
+          n.state === "building" &&
+          n.requiresCat &&
+          !isCat(player.def.id) &&
+          horiz(player.position, n.position) < DESTROY_H,
       );
       if (highNear) this.hud.floatingText(player.position, "🐱 só gatos!", PALETTE.purple);
       return;
@@ -324,11 +349,19 @@ export class Phase2Scene implements SceneController {
   // ─── Urubu (twist cooperativo) ──────────────────────────────
   private spawnVulture(): void {
     this.vultureSpawned = true;
-    const v = MeshBuilder.CreateSphere("vulture", { diameterX: 2.4, diameterY: 2.0, diameterZ: 3.0 }, this.scene);
+    const v = MeshBuilder.CreateSphere(
+      "vulture",
+      { diameterX: 2.4, diameterY: 2.0, diameterZ: 3.0 },
+      this.scene,
+    );
     v.position.set(0, 1.4, 0);
     v.material = createToonMaterial(this.scene, "#2A2A35", "vulture");
     applyOutline(v, 0.08);
-    const beak = MeshBuilder.CreateCylinder("vbeak", { diameterTop: 0, diameterBottom: 0.6, height: 1.0 }, this.scene);
+    const beak = MeshBuilder.CreateCylinder(
+      "vbeak",
+      { diameterTop: 0, diameterBottom: 0.6, height: 1.0 },
+      this.scene,
+    );
     beak.material = createToonMaterial(this.scene, "#E8A33D", "vbeak");
     beak.parent = v;
     beak.rotation.x = Math.PI / 2;
@@ -344,7 +377,9 @@ export class Phase2Scene implements SceneController {
     }
     if (!this.vulture) return;
     this.vulture.rotation.y += dt * 0.5;
-    const near = this.players.filter((p) => horiz(p.position, this.vulture!.position) < VULTURE_RADIUS).length;
+    const near = this.players.filter(
+      (p) => horiz(p.position, this.vulture!.position) < VULTURE_RADIUS,
+    ).length;
     if (near >= 2) {
       this.vultureExpelTimer += dt;
       this.vulture.position.y = 1.4 + Math.sin(performance.now() * 0.02) * 0.2; // treme
@@ -375,12 +410,16 @@ export class Phase2Scene implements SceneController {
     this.players.forEach((p) => {
       const input = this.game.input.getInput(p.slot);
       p.update(dt, input, forward);
-      if (input.interact) this.tryDestroy(p);    });
+      if (input.interact) this.tryDestroy(p);
+    });
 
     this.updateBirds(dt);
     this.updateVulture(dt);
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     this.hud.update({

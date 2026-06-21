@@ -407,7 +407,8 @@ class AudioManager {
       case "kitchen":
         this.addDrone(80, "sine", 0.04); // zumbido de geladeira
         this.ambienceEvery = [2.2, 5];
-        this.ambienceEvent = () => this.blip(1700 + Math.random() * 900, 0.09, "triangle", 0.13, now(), -200, amb); // talher
+        this.ambienceEvent = () =>
+          this.blip(1700 + Math.random() * 900, 0.09, "triangle", 0.13, now(), -200, amb); // talher
         break;
       case "yard":
         this.addNoiseDrone(600, 0.018);
@@ -428,7 +429,8 @@ class AudioManager {
         this.addDrone(50, "sawtooth", 0.05);
         this.addDrone(75.5, "square", 0.03); // batimento tenso
         this.ambienceEvery = [1, 2.6];
-        this.ambienceEvent = () => this.blip(120 + Math.random() * 220, 0.2, "sawtooth", 0.12, now(), -40, amb);
+        this.ambienceEvent = () =>
+          this.blip(120 + Math.random() * 220, 0.2, "sawtooth", 0.12, now(), -40, amb);
         break;
       case "calm":
         this.addDrone(midi(48), "sine", 0.05);
@@ -455,7 +457,8 @@ class AudioManager {
     const g = ctx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, when);
-    if (bend !== 0) osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq + bend), when + dur);
+    if (bend !== 0)
+      osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq + bend), when + dur);
     g.gain.setValueAtTime(0.0001, when);
     g.gain.exponentialRampToValueAtTime(gain, when + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
@@ -480,7 +483,8 @@ class AudioManager {
     const filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(filterHz, when);
-    if (sweep !== 0) filter.frequency.exponentialRampToValueAtTime(Math.max(80, filterHz + sweep), when + dur);
+    if (sweep !== 0)
+      filter.frequency.exponentialRampToValueAtTime(Math.max(80, filterHz + sweep), when + dur);
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain, when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + dur);

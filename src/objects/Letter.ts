@@ -61,11 +61,7 @@ export class Letter {
   /** Reposiciona a carta sobre o portador. stackIndex empilha múltiplas. */
   followCarrier(pos: Vector3, stackIndex: number): void {
     if (this.state !== "carried") return;
-    this.mesh.position.set(
-      pos.x,
-      pos.y + this.offset.y + stackIndex * 0.18,
-      pos.z,
-    );
+    this.mesh.position.set(pos.x, pos.y + this.offset.y + stackIndex * 0.18, pos.z);
   }
 
   drop(): void {

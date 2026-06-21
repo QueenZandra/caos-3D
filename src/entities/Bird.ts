@@ -26,12 +26,20 @@ export class Bird {
     counter++;
     this.nestIndex = nestIndex;
 
-    this.mesh = MeshBuilder.CreateSphere(`bird_${counter}`, { diameterX: 0.5, diameterY: 0.45, diameterZ: 0.7 }, scene);
+    this.mesh = MeshBuilder.CreateSphere(
+      `bird_${counter}`,
+      { diameterX: 0.5, diameterY: 0.45, diameterZ: 0.7 },
+      scene,
+    );
     this.mesh.position.copyFrom(spawn);
     this.mesh.material = createToonMaterial(scene, "#4A4A5A", `bird_${counter}`);
     applyOutline(this.mesh, 0.04);
 
-    this.beak = MeshBuilder.CreateCylinder(`beak_${counter}`, { diameterTop: 0, diameterBottom: 0.18, height: 0.3, tessellation: 8 }, scene);
+    this.beak = MeshBuilder.CreateCylinder(
+      `beak_${counter}`,
+      { diameterTop: 0, diameterBottom: 0.18, height: 0.3, tessellation: 8 },
+      scene,
+    );
     this.beak.material = createToonMaterial(scene, "#FFD166", `beak_${counter}`);
     this.beak.parent = this.mesh;
     this.beak.rotation.x = Math.PI / 2;

@@ -104,7 +104,11 @@ export class Phase5Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildYard(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#5FA05F", "grass");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#4C8C4C").scale(0.3);
@@ -135,7 +139,11 @@ export class Phase5Scene implements SceneController {
     door.position.set(HOUSE.x, 1.2, -HALF + 2.05);
     door.material = createToonMaterial(this.scene, "#6B4226", "door");
 
-    const ring = MeshBuilder.CreateTorus("houseRing", { diameter: HOUSE_R * 2, thickness: 0.18, tessellation: 28 }, this.scene);
+    const ring = MeshBuilder.CreateTorus(
+      "houseRing",
+      { diameter: HOUSE_R * 2, thickness: 0.18, tessellation: 28 },
+      this.scene,
+    );
     ring.position.set(HOUSE.x, 0.06, HOUSE.z);
     const rmat = createToonMaterial(this.scene, PALETTE.pink, "houseRing");
     (rmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.pink).scale(0.7);
@@ -158,11 +166,19 @@ export class Phase5Scene implements SceneController {
   }
 
   private spawnChicken(): void {
-    this.chicken = MeshBuilder.CreateSphere("chicken", { diameterX: 0.6, diameterY: 0.7, diameterZ: 0.8 }, this.scene);
+    this.chicken = MeshBuilder.CreateSphere(
+      "chicken",
+      { diameterX: 0.6, diameterY: 0.7, diameterZ: 0.8 },
+      this.scene,
+    );
     this.chicken.position.set(0, 0.6, 4);
     this.chicken.material = createToonMaterial(this.scene, "#FFF8F0", "chicken");
     applyOutline(this.chicken, 0.04);
-    const comb = MeshBuilder.CreateBox("comb", { width: 0.15, height: 0.2, depth: 0.3 }, this.scene);
+    const comb = MeshBuilder.CreateBox(
+      "comb",
+      { width: 0.15, height: 0.2, depth: 0.3 },
+      this.scene,
+    );
     comb.material = createToonMaterial(this.scene, PALETTE.pink, "comb");
     comb.parent = this.chicken;
     comb.position = new Vector3(0, 0.45, 0.15);
@@ -191,7 +207,10 @@ export class Phase5Scene implements SceneController {
         }
       }
     }
-    if (this.boss && Math.hypot(this.boss.position.x - center.x, this.boss.position.z - center.z) <= radius) {
+    if (
+      this.boss &&
+      Math.hypot(this.boss.position.x - center.x, this.boss.position.z - center.z) <= radius
+    ) {
       this.hud.floatingText(this.boss.position, "o boss resiste! 😼", PALETTE.purple);
     }
   }
@@ -275,7 +294,11 @@ export class Phase5Scene implements SceneController {
       this.boss.mesh.scaling.setAll(2.4);
       this.shadows.addShadowCaster(this.boss.mesh);
       this.cam.shake(0.8, 0.5);
-      this.hud.floatingText(this.boss.position, "GATO GIGANTE! 2 pets p/ expulsar!", PALETTE.purple);
+      this.hud.floatingText(
+        this.boss.position,
+        "GATO GIGANTE! 2 pets p/ expulsar!",
+        PALETTE.purple,
+      );
     }
     if (!this.boss) return;
 
@@ -290,7 +313,9 @@ export class Phase5Scene implements SceneController {
     }
     // QTE: 2+ pets perto por 1.5s
     const near = this.players.filter(
-      (p) => Math.hypot(p.position.x - this.boss!.position.x, p.position.z - this.boss!.position.z) < BOSS_RADIUS,
+      (p) =>
+        Math.hypot(p.position.x - this.boss!.position.x, p.position.z - this.boss!.position.z) <
+        BOSS_RADIUS,
     ).length;
     if (near >= 2) {
       this.bossExpelTimer += dt;
@@ -329,7 +354,10 @@ export class Phase5Scene implements SceneController {
     this.updateChicken(dt);
     this.updateBoss(dt);
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     this.hud.update({

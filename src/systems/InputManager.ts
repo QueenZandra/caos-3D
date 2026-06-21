@@ -69,11 +69,7 @@ export class InputManager {
   private onKeyDown = (e: KeyboardEvent) => {
     this.keys.add(e.code);
     // evita rolagem da página com setas/espaço
-    if (
-      ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(
-        e.code,
-      )
-    ) {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
       e.preventDefault();
     }
   };
@@ -109,9 +105,7 @@ export class InputManager {
 
   // ─── Gamepad ────────────────────────────────────────────────
   private padEdge(idx: number, btn: number): boolean {
-    return (
-      !!this.curPadButtons[idx]?.[btn] && !this.prevPadButtons[idx]?.[btn]
-    );
+    return !!this.curPadButtons[idx]?.[btn] && !this.prevPadButtons[idx]?.[btn];
   }
   private stick(idx: number): { x: number; y: number } {
     const pad = this.getGamepads()[idx];
@@ -129,10 +123,14 @@ export class InputManager {
     const pad = this.getGamepads()[idx];
     if (!pad) return "generic";
     const id = pad.id.toLowerCase();
-    if (id.includes("dualsense") || id.includes("dualshock") || id.includes("playstation") || id.includes("054c"))
+    if (
+      id.includes("dualsense") ||
+      id.includes("dualshock") ||
+      id.includes("playstation") ||
+      id.includes("054c")
+    )
       return "playstation";
-    if (id.includes("xbox") || id.includes("xinput") || id.includes("045e"))
-      return "xbox";
+    if (id.includes("xbox") || id.includes("xinput") || id.includes("045e")) return "xbox";
     return "generic";
   }
 
@@ -159,9 +157,29 @@ export class InputManager {
   getInput(slot: PlayerSlot): FrameInput {
     switch (slot.inputKind) {
       case "keyboard-wasd":
-        return this.keyboardInput("KeyW", "KeyS", "KeyA", "KeyD", "Space", "KeyE", "KeyQ", "KeyF", "Escape");
+        return this.keyboardInput(
+          "KeyW",
+          "KeyS",
+          "KeyA",
+          "KeyD",
+          "Space",
+          "KeyE",
+          "KeyQ",
+          "KeyF",
+          "Escape",
+        );
       case "keyboard-arrows":
-        return this.keyboardInput("ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "ShiftRight", "ControlRight", "Slash", "Escape");
+        return this.keyboardInput(
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "Enter",
+          "ShiftRight",
+          "ControlRight",
+          "Slash",
+          "Escape",
+        );
       case "gamepad":
         return this.gamepadInput(slot.gamepadIndex ?? 0);
       default:
@@ -201,8 +219,7 @@ export class InputManager {
       (this.padEdge(idx, BUTTON.DPAD_RIGHT) ? 1 : 0) -
       (this.padEdge(idx, BUTTON.DPAD_LEFT) ? 1 : 0);
     const navY =
-      (this.padEdge(idx, BUTTON.DPAD_UP) ? 1 : 0) -
-      (this.padEdge(idx, BUTTON.DPAD_DOWN) ? 1 : 0);
+      (this.padEdge(idx, BUTTON.DPAD_UP) ? 1 : 0) - (this.padEdge(idx, BUTTON.DPAD_DOWN) ? 1 : 0);
     return {
       moveX: s.x,
       moveY: s.y,

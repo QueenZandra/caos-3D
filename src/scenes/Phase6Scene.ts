@@ -92,7 +92,11 @@ export class Phase6Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildFacade(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#8A8FA3", "floor");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#6E7488").scale(0.3);
@@ -101,7 +105,11 @@ export class Phase6Scene implements SceneController {
     new PhysicsAggregate(floor, PhysicsShapeType.BOX, { mass: 0, friction: 0.6 }, this.scene);
 
     // rua (faixa visual além da fachada)
-    const street = MeshBuilder.CreateBox("street", { width: X_LIMIT * 2.4, height: 0.1, depth: 4 }, this.scene);
+    const street = MeshBuilder.CreateBox(
+      "street",
+      { width: X_LIMIT * 2.4, height: 0.1, depth: 4 },
+      this.scene,
+    );
     street.position.set(0, 0.02, STREET_Z);
     street.material = createToonMaterial(this.scene, "#3A3A45", "street");
 
@@ -120,12 +128,20 @@ export class Phase6Scene implements SceneController {
 
     // janelas (postos) — molduras na fachada + marcador no chão
     WINDOWS_X.forEach((wx, i) => {
-      const frame = MeshBuilder.CreateBox(`win_${i}`, { width: 2.4, height: 1.8, depth: 0.3 }, this.scene);
+      const frame = MeshBuilder.CreateBox(
+        `win_${i}`,
+        { width: 2.4, height: 1.8, depth: 0.3 },
+        this.scene,
+      );
       frame.position.set(wx, 1.8, -HALF + 0.3);
       frame.material = createToonMaterial(this.scene, "#7FC8F0", `win_${i}`);
       applyOutline(frame, 0.04);
 
-      const mark = MeshBuilder.CreateTorus(`winmark_${i}`, { diameter: WINDOW_R * 1.6, thickness: 0.16, tessellation: 24 }, this.scene);
+      const mark = MeshBuilder.CreateTorus(
+        `winmark_${i}`,
+        { diameter: WINDOW_R * 1.6, thickness: 0.16, tessellation: 24 },
+        this.scene,
+      );
       mark.position.set(wx, 0.06, WINDOW_Z);
       const mmat = createToonMaterial(this.scene, PALETTE.yellow, `winmark_${i}`);
       (mmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.yellow).scale(0.6);
@@ -169,14 +185,28 @@ export class Phase6Scene implements SceneController {
         { dx: -5, dz: -2 },
       ];
       vOff.forEach((o, k) => {
-        const m = new Motorcycle(this.scene, startX + dir * o.dx, STREET_Z + o.dz, dir, 7, MOTO_COLORS[k % MOTO_COLORS.length]);
+        const m = new Motorcycle(
+          this.scene,
+          startX + dir * o.dx,
+          STREET_Z + o.dz,
+          dir,
+          7,
+          MOTO_COLORS[k % MOTO_COLORS.length],
+        );
         this.shadows.addShadowCaster(m.root.getChildMeshes()[0]);
         this.bikes.push(m);
       });
       this.hud.floatingText(new Vector3(0, 3, STREET_Z), "CARREATA FINAL! 🏍️🏍️🏍️", PALETTE.pink);
     } else {
       const speed = 7 + Math.random() * 4;
-      const m = new Motorcycle(this.scene, startX, STREET_Z, dir, speed, MOTO_COLORS[Math.floor(Math.random() * MOTO_COLORS.length)]);
+      const m = new Motorcycle(
+        this.scene,
+        startX,
+        STREET_Z,
+        dir,
+        speed,
+        MOTO_COLORS[Math.floor(Math.random() * MOTO_COLORS.length)],
+      );
       this.shadows.addShadowCaster(m.root.getChildMeshes()[0]);
       this.bikes.push(m);
     }
@@ -221,7 +251,11 @@ export class Phase6Scene implements SceneController {
   private makeNoise(player: Player): void {
     if (this.atWindow(player.position)) {
       this.noise = Math.min(1.4, this.noise + BARK);
-      this.hud.floatingText(player.position, player.def.species === "Cachorro" || player.def.species === "Cachorra" ? "AU!" : "MIAU!", player.def.color);
+      this.hud.floatingText(
+        player.position,
+        player.def.species === "Cachorro" || player.def.species === "Cachorra" ? "AU!" : "MIAU!",
+        player.def.color,
+      );
     } else {
       this.hud.floatingText(player.position, "→ vá p/ a janela!", PALETTE.yellow);
     }
@@ -241,7 +275,10 @@ export class Phase6Scene implements SceneController {
 
     this.updatePass(dt);
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     const passActive = this.bikes.length > 0;

@@ -98,7 +98,11 @@ export class Phase3Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildRoom(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#9A6B5A", "carpet");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#7A4F44").scale(0.3);
@@ -120,7 +124,11 @@ export class Phase3Scene implements SceneController {
     mk("wS", ARENA, 0.5, 0, -HALF);
 
     // zona segura (cama/colchão) — almofadas aqui ficam protegidas
-    const bed = MeshBuilder.CreateBox("bed", { width: BED_RADIUS * 2, height: 0.4, depth: BED_RADIUS * 2 }, this.scene);
+    const bed = MeshBuilder.CreateBox(
+      "bed",
+      { width: BED_RADIUS * 2, height: 0.4, depth: BED_RADIUS * 2 },
+      this.scene,
+    );
     bed.position.set(BED.x, 0.2, BED.z);
     const bmat = createToonMaterial(this.scene, PALETTE.teal, "bed");
     (bmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.4);
@@ -129,7 +137,11 @@ export class Phase3Scene implements SceneController {
     bed.receiveShadows = true;
     new PhysicsAggregate(bed, PhysicsShapeType.BOX, { mass: 0, friction: 0.7 }, this.scene);
 
-    const ring = MeshBuilder.CreateTorus("bedRing", { diameter: BED_RADIUS * 2, thickness: 0.18, tessellation: 28 }, this.scene);
+    const ring = MeshBuilder.CreateTorus(
+      "bedRing",
+      { diameter: BED_RADIUS * 2, thickness: 0.18, tessellation: 28 },
+      this.scene,
+    );
     ring.position.set(BED.x, 0.45, BED.z);
     const rmat = createToonMaterial(this.scene, PALETTE.teal, "bedRing");
     (rmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.8);
@@ -240,7 +252,8 @@ export class Phase3Scene implements SceneController {
 
     // câmera treme ao bater na parede
     this.shakeCooldown -= dt;
-    const near = Math.abs(this.puff.position.x) > HALF - 2 || Math.abs(this.puff.position.z) > HALF - 2;
+    const near =
+      Math.abs(this.puff.position.x) > HALF - 2 || Math.abs(this.puff.position.z) > HALF - 2;
     if (near && this.puff.speed > 4 && this.shakeCooldown <= 0) {
       this.cam.shake(0.7, 0.35);
       this.shakeCooldown = 0.8;
@@ -283,7 +296,10 @@ export class Phase3Scene implements SceneController {
     this.updateCarried();
     this.updatePuff(dt);
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     // remove destruídas

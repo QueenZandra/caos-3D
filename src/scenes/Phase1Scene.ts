@@ -116,7 +116,11 @@ export class Phase1Scene implements SceneController {
   // ─── Construção do cenário ──────────────────────────────────
   private buildArena(): void {
     // chão (box fino para colisão confiável)
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const floorMat = createToonMaterial(this.scene, "#C8A06B", "floor");
     (floorMat as StandardMaterial).emissiveColor = Color3.FromHexString("#C8A06B").scale(0.2);
@@ -144,14 +148,22 @@ export class Phase1Scene implements SceneController {
   }
 
   private buildBin(): void {
-    const bin = MeshBuilder.CreateCylinder("bin", { diameter: BIN_RADIUS * 1.4, height: 1, tessellation: 16 }, this.scene);
+    const bin = MeshBuilder.CreateCylinder(
+      "bin",
+      { diameter: BIN_RADIUS * 1.4, height: 1, tessellation: 16 },
+      this.scene,
+    );
     bin.position.copyFrom(BIN_POS);
     const mat = createToonMaterial(this.scene, PALETTE.teal, "bin");
     (mat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.6);
     bin.material = mat;
     applyOutline(bin, 0.05);
     // anel de destaque no chão
-    const ring = MeshBuilder.CreateTorus("binRing", { diameter: BIN_RADIUS * 2, thickness: 0.18, tessellation: 24 }, this.scene);
+    const ring = MeshBuilder.CreateTorus(
+      "binRing",
+      { diameter: BIN_RADIUS * 2, thickness: 0.18, tessellation: 24 },
+      this.scene,
+    );
     ring.position.set(BIN_POS.x, 0.06, BIN_POS.z);
     const ringMat = createToonMaterial(this.scene, PALETTE.teal, "binRing");
     (ringMat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.8);
@@ -291,13 +303,17 @@ export class Phase1Scene implements SceneController {
       p.slowFactor = slow;
       p.update(dt, input, forward);
       if (input.interact) this.tryPickup(p, i);
-      if (input.drop) this.dropAll(p, i);    });
+      if (input.drop) this.dropAll(p, i);
+    });
 
     this.updateCarried();
     this.updateEffects(dt);
 
     // câmera segue os pets (split-view automático quando se separam)
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
 
     // limpa cartas que caíram fora da arena (segurança)

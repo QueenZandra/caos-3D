@@ -96,7 +96,8 @@ export class Food {
     // achata e fica vermelho (visual de quebrado)
     this.mesh.scaling.y = 0.2;
     (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString("#C0392B");
-    (this.mesh.material as StandardMaterial).emissiveColor = Color3.FromHexString("#C0392B").scale(0.4);
+    (this.mesh.material as StandardMaterial).emissiveColor =
+      Color3.FromHexString("#C0392B").scale(0.4);
     this.aggregate.body.setMotionType(PhysicsMotionType.STATIC);
   }
 

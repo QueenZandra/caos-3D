@@ -102,7 +102,11 @@ export class CharSelectScene implements SceneController {
       const focused = i === this.cursor;
       p.root.scaling.setAll(focused && !taken ? 1.25 : 1);
       const ped = this.pedestals[i];
-      const ownerHex = taken ? PLAYER_HEX[this.takenBy[i]!] : focused ? PLAYER_HEX[this.currentPlayer] : "#2A2A45";
+      const ownerHex = taken
+        ? PLAYER_HEX[this.takenBy[i]!]
+        : focused
+          ? PLAYER_HEX[this.currentPlayer]
+          : "#2A2A45";
       (ped.material as StandardMaterial).emissiveColor = Color3.FromHexString(ownerHex);
     });
 

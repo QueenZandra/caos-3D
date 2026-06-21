@@ -42,7 +42,11 @@ export class Nest {
       { diameter: 1.1, thickness: 0.12, tessellation: 16 },
       scene,
     );
-    this.marker.material = createToonMaterial(scene, requiresCat ? "#9B5DE5" : "#06D6A0", `nestmark_${counter}`);
+    this.marker.material = createToonMaterial(
+      scene,
+      requiresCat ? "#9B5DE5" : "#06D6A0",
+      `nestmark_${counter}`,
+    );
     this.marker.parent = this.root;
     this.marker.visibility = 0.35;
   }
@@ -51,7 +55,11 @@ export class Nest {
     if (this.state !== "empty") return;
     this.state = "building";
     this.progress = 0;
-    this.twigs = MeshBuilder.CreateTorus(`twigs_${counter}`, { diameter: 1.0, thickness: 0.28, tessellation: 12 }, this.scene);
+    this.twigs = MeshBuilder.CreateTorus(
+      `twigs_${counter}`,
+      { diameter: 1.0, thickness: 0.28, tessellation: 12 },
+      this.scene,
+    );
     this.twigs.material = createToonMaterial(this.scene, "#8C5A3C", `twigs_${counter}`);
     applyOutline(this.twigs, 0.03);
     this.twigs.parent = this.root;
@@ -66,7 +74,11 @@ export class Nest {
 
     // estágio 2: forrado
     if (this.progress >= 0.5 && !this.lining) {
-      this.lining = MeshBuilder.CreateDisc(`lining_${counter}`, { radius: 0.4, tessellation: 16 }, this.scene);
+      this.lining = MeshBuilder.CreateDisc(
+        `lining_${counter}`,
+        { radius: 0.4, tessellation: 16 },
+        this.scene,
+      );
       this.lining.rotation.x = Math.PI / 2;
       this.lining.material = createToonMaterial(this.scene, "#D9B382", `lining_${counter}`);
       this.lining.parent = this.root;
@@ -83,9 +95,17 @@ export class Nest {
   }
 
   private spawnEggs(): void {
-    const offsets = [new Vector3(-0.18, 0.12, 0), new Vector3(0.18, 0.12, 0), new Vector3(0, 0.12, 0.18)];
+    const offsets = [
+      new Vector3(-0.18, 0.12, 0),
+      new Vector3(0.18, 0.12, 0),
+      new Vector3(0, 0.12, 0.18),
+    ];
     for (const off of offsets) {
-      const egg = MeshBuilder.CreateSphere(`egg_${counter}_${this.eggs.length}`, { diameterX: 0.22, diameterY: 0.3, diameterZ: 0.22 }, this.scene);
+      const egg = MeshBuilder.CreateSphere(
+        `egg_${counter}_${this.eggs.length}`,
+        { diameterX: 0.22, diameterY: 0.3, diameterZ: 0.22 },
+        this.scene,
+      );
       egg.material = createToonMaterial(this.scene, "#FFF8F0", `egg_${counter}`);
       applyOutline(egg, 0.02);
       egg.parent = this.root;

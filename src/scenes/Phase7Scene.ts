@@ -102,7 +102,11 @@ export class Phase7Scene implements SceneController {
 
   // ─── Cenário ────────────────────────────────────────────────
   private buildHouse(): void {
-    const floor = MeshBuilder.CreateBox("floor", { width: ARENA, height: 1, depth: ARENA }, this.scene);
+    const floor = MeshBuilder.CreateBox(
+      "floor",
+      { width: ARENA, height: 1, depth: ARENA },
+      this.scene,
+    );
     floor.position.y = -0.5;
     const fmat = createToonMaterial(this.scene, "#A88C6B", "floor");
     (fmat as StandardMaterial).emissiveColor = Color3.FromHexString("#8A7050").scale(0.3);
@@ -125,14 +129,22 @@ export class Phase7Scene implements SceneController {
     mk("wN2", HALF - 2, 0.5, HALF / 2 + 1, HALF);
 
     // núcleo a proteger (centro)
-    const core = MeshBuilder.CreateTorus("core", { diameter: CENTER_R * 2, thickness: 0.2, tessellation: 32 }, this.scene);
+    const core = MeshBuilder.CreateTorus(
+      "core",
+      { diameter: CENTER_R * 2, thickness: 0.2, tessellation: 32 },
+      this.scene,
+    );
     core.position.y = 0.06;
     const cmat = createToonMaterial(this.scene, PALETTE.pink, "core");
     (cmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.pink).scale(0.6);
     core.material = cmat;
 
     // lixeira de cartas
-    const bin = MeshBuilder.CreateCylinder("bin", { diameter: BIN_R * 1.4, height: 1, tessellation: 16 }, this.scene);
+    const bin = MeshBuilder.CreateCylinder(
+      "bin",
+      { diameter: BIN_R * 1.4, height: 1, tessellation: 16 },
+      this.scene,
+    );
     bin.position.copyFrom(BIN);
     const bmat = createToonMaterial(this.scene, PALETTE.teal, "bin");
     (bmat as StandardMaterial).emissiveColor = Color3.FromHexString(PALETTE.teal).scale(0.6);
@@ -141,7 +153,12 @@ export class Phase7Scene implements SceneController {
   }
 
   private spawnPlayers(): void {
-    const spread = [new Vector3(-2, 1, -2), new Vector3(2, 1, -2), new Vector3(-2, 1, 2), new Vector3(2, 1, 2)];
+    const spread = [
+      new Vector3(-2, 1, -2),
+      new Vector3(2, 1, -2),
+      new Vector3(-2, 1, 2),
+      new Vector3(2, 1, 2),
+    ];
     GameConfig.players.forEach((slot, i) => {
       const p = createPlayer(this.scene, slot, spread[i] ?? new Vector3(0, 1, 0), this.hooks);
       p.registerShadows(this.shadows);
@@ -170,7 +187,11 @@ export class Phase7Scene implements SceneController {
   private spawnLetter(): void {
     if (this.letters.length >= MAX_LETTERS) return;
     const x = (Math.random() - 0.5) * 3;
-    const l = new Letter(this.scene, new Vector3(x, 0.4, DOOR_Z), LETTER_COLORS[Math.floor(Math.random() * LETTER_COLORS.length)]);
+    const l = new Letter(
+      this.scene,
+      new Vector3(x, 0.4, DOOR_Z),
+      LETTER_COLORS[Math.floor(Math.random() * LETTER_COLORS.length)],
+    );
     this.shadows.addShadowCaster(l.mesh);
     l.slideIn(new Vector3((Math.random() - 0.5) * 0.5, 0, -1).normalize(), 2.2 + Math.random());
     this.letters.push(l);
@@ -179,7 +200,13 @@ export class Phase7Scene implements SceneController {
   private spawnInvader(): void {
     if (this.invaders.length >= MAX_INVADERS) return;
     const entry = ENTRIES[Math.floor(Math.random() * ENTRIES.length)];
-    const inv = new Invader(this.scene, entry.clone(), 1, 2.2 + Math.random(), INVADER_COLORS[Math.floor(Math.random() * INVADER_COLORS.length)]);
+    const inv = new Invader(
+      this.scene,
+      entry.clone(),
+      1,
+      2.2 + Math.random(),
+      INVADER_COLORS[Math.floor(Math.random() * INVADER_COLORS.length)],
+    );
     this.shadows.addShadowCaster(inv.mesh);
     this.invaders.push(inv);
   }
@@ -334,7 +361,10 @@ export class Phase7Scene implements SceneController {
     this.chaos += dt * (0.006 * onFloor + 0.045 * inside) - dt * 0.02;
     this.chaos = Math.max(0, Math.min(1, this.chaos));
 
-    this.cam.update(dt, this.players.map((p) => p.position));
+    this.cam.update(
+      dt,
+      this.players.map((p) => p.position),
+    );
     this.hud.setSplit(this.cam.isSplit);
     this.updateRadar();
 
@@ -357,7 +387,8 @@ export class Phase7Scene implements SceneController {
     dots.push({ x: 0, z: 0, hex: PALETTE.pink }); // núcleo
     dots.push({ x: BIN.x, z: BIN.z, hex: PALETTE.teal }); // lixeira
     for (const p of this.players) dots.push({ x: p.position.x, z: p.position.z, hex: p.def.color });
-    for (const inv of this.invaders) dots.push({ x: inv.position.x, z: inv.position.z, hex: "#FF3B30" });
+    for (const inv of this.invaders)
+      dots.push({ x: inv.position.x, z: inv.position.z, hex: "#FF3B30" });
     dots.push({ x: this.puff.position.x, z: this.puff.position.z, hex: "#FFFFFF" });
     this.hud.radar(HALF, dots);
   }
