@@ -75,6 +75,13 @@ ela é destruída. Leve as almofadas para a **zona segura** (a cama) e mantenha 
 menos **12 intactas** por **120s**. A câmera **treme** quando o puff bate nas
 paredes; o **Latido do Sirius repele** o puff. Derrota: cair abaixo de 12 intactas.
 
+**Fase 4 — "O Roubo Épico da Cozinha"**: 15 comidas empilhadas em bancadas altas.
+A **cascata de queda é física real** (Havok) — tire a de baixo e as de cima
+despencam; quem cai no chão **quebra** (preview em vermelho avisa quais vão cair).
+**Gatos** (Minerva/Zoe) sobem nas bancadas; **cães** precisam de **boost** — fique
+ao lado de outro pet e use a **ação conjunta (△/Y)**. Entregue as comidas no
+**prato**. Meta: 10 comidas com no máximo **5 quebradas**.
+
 As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
@@ -133,7 +140,8 @@ src/
 - [x] Split-view automático no `CameraSystem` quando os pets se separam.
 - [x] **Fase 2 "Os Pássaros Abusados"** (ninhos em 3 estágios, gating de gatos, urubu).
 - [x] **Fase 3 "A Rebelião das Almofadas"** (rigidbodies, vento, puff que persegue, camera shake).
-- [ ] Fases 4–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 4 "O Roubo Épico da Cozinha"** (cascata física, preview vermelho, boost co-op).
+- [ ] Fases 5–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.

@@ -64,6 +64,8 @@ export class Player {
   speedMultiplier = 1;
   slowFactor = 1;
   stunnedFor = 0;
+  /** elevado por boost (QTE de 2 players) — permite pegar comidas altas */
+  boostedFor = 0;
   protected cooldownRemaining = 0;
   protected abilityActiveFor = 0;
 
@@ -180,8 +182,19 @@ export class Player {
     return this.stunnedFor > 0;
   }
 
+  get boosted(): boolean {
+    return this.boostedFor > 0;
+  }
+
   stun(seconds: number): void {
     this.stunnedFor = Math.max(this.stunnedFor, seconds);
+  }
+
+  /** Recebe um boost (QTE): pequeno salto + janela para alcançar lugares altos. */
+  boost(seconds: number): void {
+    this.boostedFor = Math.max(this.boostedFor, seconds);
+    const v = this.aggregate.body.getLinearVelocity();
+    this.aggregate.body.setLinearVelocity(new Vector3(v.x, 5, v.z));
   }
 
   /** Transparência visual (usado pela Furtividade da Zoe). */
@@ -193,6 +206,7 @@ export class Player {
   /** Atualiza por frame. cameraForward = direção "frente" no plano do chão. */
   update(dt: number, input: FrameInput, cameraForward: Vector3): void {
     if (this.cooldownRemaining > 0) this.cooldownRemaining -= dt;
+    if (this.boostedFor > 0) this.boostedFor -= dt;
     if (this.abilityActiveFor > 0) {
       this.abilityActiveFor -= dt;
       if (this.abilityActiveFor <= 0) this.onAbilityEnd();
