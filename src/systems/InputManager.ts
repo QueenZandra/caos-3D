@@ -143,6 +143,18 @@ export class InputManager {
       .map((p) => p.index);
   }
 
+  /**
+   * Borda de "pausar" agregada de qualquer controle (Esc no teclado ou Start
+   * em qualquer gamepad). Usada pelo GameManager para abrir/fechar a pausa.
+   */
+  pauseEdge(): boolean {
+    if (this.keyEdge("Escape")) return true;
+    for (const idx of this.connectedPads()) {
+      if (this.padEdge(idx, BUTTON.START)) return true;
+    }
+    return false;
+  }
+
   /** Input de um slot de jogador (gameplay). */
   getInput(slot: PlayerSlot): FrameInput {
     switch (slot.inputKind) {

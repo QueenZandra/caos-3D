@@ -323,7 +323,6 @@ export class Phase5Scene implements SceneController {
       const input = this.game.input.getInput(p.slot);
       p.update(dt, input, forward);
       if (input.interact) this.tryExpel(p);
-      if (input.pause) this.finish(false);
     });
 
     this.updateInvaders(dt);

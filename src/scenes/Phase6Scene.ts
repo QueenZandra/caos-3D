@@ -237,7 +237,6 @@ export class Phase6Scene implements SceneController {
       const input = this.game.input.getInput(p.slot);
       p.update(dt, input, forward);
       if (input.interact) this.makeNoise(p);
-      if (input.pause) this.finish(false);
     });
 
     this.updatePass(dt);

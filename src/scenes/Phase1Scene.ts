@@ -291,9 +291,7 @@ export class Phase1Scene implements SceneController {
       p.slowFactor = slow;
       p.update(dt, input, forward);
       if (input.interact) this.tryPickup(p, i);
-      if (input.drop) this.dropAll(p, i);
-      if (input.pause) this.finish(false);
-    });
+      if (input.drop) this.dropAll(p, i);    });
 
     this.updateCarried();
     this.updateEffects(dt);

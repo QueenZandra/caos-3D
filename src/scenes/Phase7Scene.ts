@@ -319,7 +319,6 @@ export class Phase7Scene implements SceneController {
       p.update(dt, input, forward);
       if (input.interact) this.interact(p, i);
       if (input.drop) this.dropAll(p, i);
-      if (input.pause) this.finish(false);
     });
 
     this.updateCarried();

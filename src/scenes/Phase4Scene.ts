@@ -302,7 +302,6 @@ export class Phase4Scene implements SceneController {
       if (input.interact) this.tryPickup(p, i);
       if (input.joint) this.tryBoost(p, i);
       if (input.drop) this.dropAll(p, i);
-      if (input.pause) this.finish(false);
     });
 
     this.updateCarried();

@@ -5,6 +5,7 @@ import { InputManager } from "./InputManager";
 import { initPhysics } from "./PhysicsSystem";
 import { Audio } from "./AudioManager";
 import type { SceneController } from "../scenes/SceneController";
+import { PauseMenu } from "../ui/PauseMenu";
 
 import { MenuScene } from "../scenes/MenuScene";
 import { PlayerCountScene } from "../scenes/PlayerCountScene";
@@ -31,6 +32,9 @@ export class GameManager {
 
   private current: SceneController | null = null;
   private nextState: GameState | null = null;
+  private activeState: GameState = GameState.Menu;
+  private paused = false;
+  private pauseMenu: PauseMenu | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -67,9 +71,54 @@ export class GameManager {
       }
 
       this.input.update();
-      this.current?.update(dt);
+
+      // pausa real (só em fases): congela lógica e física; Esc/Start alterna
+      if (this.activeState.startsWith("phase") && this.current) {
+        if (this.input.pauseEdge()) {
+          this.paused ? this.resume() : this.pause();
+        }
+      }
+
+      if (this.paused) {
+        this.pauseMenu?.handleInput(this.input.menuInput());
+      } else {
+        this.current?.update(dt);
+      }
       this.current?.scene.render();
     });
+  }
+
+  /** Abre o menu de pausa e congela a fase atual. */
+  private pause(): void {
+    if (this.paused || !this.current) return;
+    this.paused = true;
+    const scene = this.current.scene;
+    scene.getPhysicsEngine()?.setTimeStep(0);
+    scene.animationsEnabled = false;
+    this.pauseMenu = new PauseMenu(scene, {
+      resume: () => this.resume(),
+      restart: () => {
+        this.resume();
+        this.goTo(this.activeState);
+      },
+      quit: () => {
+        this.resume();
+        this.goTo(GameState.Menu);
+      },
+    });
+  }
+
+  /** Fecha o menu de pausa e descongela a fase. */
+  private resume(): void {
+    if (!this.paused) return;
+    this.paused = false;
+    const scene = this.current?.scene;
+    if (scene) {
+      scene.getPhysicsEngine()?.setTimeStep(1 / 60);
+      scene.animationsEnabled = true;
+    }
+    this.pauseMenu?.dispose();
+    this.pauseMenu = null;
   }
 
   /** Solicita transição (efetivada no início do próximo frame). */
@@ -78,8 +127,10 @@ export class GameManager {
   }
 
   private swap(state: GameState): void {
+    if (this.paused) this.resume(); // limpa pausa pendente ao trocar de cena
     this.current?.dispose();
     this.current = this.build(state);
+    this.activeState = state;
     // trilha conforme o contexto: fases = gameplay; menus/resultado = calmo
     const inPhase = state.startsWith("phase");
     Audio.music(inPhase ? "gameplay" : "menu");

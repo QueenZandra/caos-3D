@@ -375,9 +375,7 @@ export class Phase2Scene implements SceneController {
     this.players.forEach((p) => {
       const input = this.game.input.getInput(p.slot);
       p.update(dt, input, forward);
-      if (input.interact) this.tryDestroy(p);
-      if (input.pause) this.finish(false);
-    });
+      if (input.interact) this.tryDestroy(p);    });
 
     this.updateBirds(dt);
     this.updateVulture(dt);
