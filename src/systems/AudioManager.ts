@@ -43,7 +43,21 @@ interface TrackDef {
   notes: Note[];
 }
 
-const STORAGE_KEY = "caos_muted";
+const STORAGE_KEY = "caos_audio_v1";
+
+/** Volumes padrão (0..1). master multiplica música e efeitos. */
+const DEFAULTS = { master: 0.9, music: 0.35, sfx: 0.8 };
+
+interface AudioSettings {
+  muted: boolean;
+  master: number;
+  music: number;
+  sfx: number;
+}
+
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
 
 /** midi → Hz (A4=69=440). */
 function midi(n: number): number {
@@ -87,6 +101,9 @@ class AudioManager {
   private noiseBuffer: AudioBuffer | null = null;
 
   private muted = false;
+  private masterVolume = DEFAULTS.master;
+  private musicVolume = DEFAULTS.music;
+  private sfxVolume = DEFAULTS.sfx;
   private unlocked = false;
 
   private tracks = buildTracks();
@@ -95,10 +112,41 @@ class AudioManager {
   private nextLoopStart = 0;
 
   constructor() {
+    const s = this.loadSettings();
+    this.muted = s.muted;
+    this.masterVolume = s.master;
+    this.musicVolume = s.music;
+    this.sfxVolume = s.sfx;
+  }
+
+  private loadSettings(): AudioSettings {
+    const def: AudioSettings = { muted: false, ...DEFAULTS };
     try {
-      this.muted = localStorage.getItem(STORAGE_KEY) === "1";
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return def;
+      const p = JSON.parse(raw) as Partial<AudioSettings>;
+      return {
+        muted: !!p.muted,
+        master: clamp01(Number(p.master ?? DEFAULTS.master)),
+        music: clamp01(Number(p.music ?? DEFAULTS.music)),
+        sfx: clamp01(Number(p.sfx ?? DEFAULTS.sfx)),
+      };
     } catch {
-      /* localStorage indisponível */
+      return def;
+    }
+  }
+
+  private saveSettings(): void {
+    try {
+      const s: AudioSettings = {
+        muted: this.muted,
+        master: this.masterVolume,
+        music: this.musicVolume,
+        sfx: this.sfxVolume,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch {
+      /* localStorage indisponível — segue só em memória */
     }
   }
 
@@ -123,15 +171,15 @@ class AudioManager {
     if (this.ctx) return this.ctx;
     const ctx = new AudioContext();
     this.master = ctx.createGain();
-    this.master.gain.value = this.muted ? 0 : 0.9;
+    this.master.gain.value = this.muted ? 0 : this.masterVolume;
     this.master.connect(ctx.destination);
 
     this.musicGain = ctx.createGain();
-    this.musicGain.gain.value = 0.35;
+    this.musicGain.gain.value = this.musicVolume;
     this.musicGain.connect(this.master);
 
     this.sfxGain = ctx.createGain();
-    this.sfxGain.gain.value = 0.8;
+    this.sfxGain.gain.value = this.sfxVolume;
     this.sfxGain.connect(this.master);
 
     // buffer de ruído branco reutilizável (whoosh / susto / quebra)
@@ -156,14 +204,42 @@ class AudioManager {
 
   setMuted(m: boolean): void {
     this.muted = m;
-    try {
-      localStorage.setItem(STORAGE_KEY, m ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
+    this.applyMaster();
+    this.saveSettings();
+  }
+
+  /** Aplica master*muted ao nó de saída (suave). */
+  private applyMaster(): void {
     if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(m ? 0 : 0.9, this.ctx.currentTime, 0.05);
+      const target = this.muted ? 0 : this.masterVolume;
+      this.master.gain.setTargetAtTime(target, this.ctx.currentTime, 0.03);
     }
+  }
+
+  get volumes(): { master: number; music: number; sfx: number } {
+    return { master: this.masterVolume, music: this.musicVolume, sfx: this.sfxVolume };
+  }
+
+  setMasterVolume(v: number): void {
+    this.masterVolume = clamp01(v);
+    this.applyMaster();
+    this.saveSettings();
+  }
+
+  setMusicVolume(v: number): void {
+    this.musicVolume = clamp01(v);
+    if (this.musicGain && this.ctx) {
+      this.musicGain.gain.setTargetAtTime(this.musicVolume, this.ctx.currentTime, 0.03);
+    }
+    this.saveSettings();
+  }
+
+  setSfxVolume(v: number): void {
+    this.sfxVolume = clamp01(v);
+    if (this.sfxGain && this.ctx) {
+      this.sfxGain.gain.setTargetAtTime(this.sfxVolume, this.ctx.currentTime, 0.03);
+    }
+    this.saveSettings();
   }
 
   // ─── SFX ───────────────────────────────────────────────────────────────

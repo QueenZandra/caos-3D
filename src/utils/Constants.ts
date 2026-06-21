@@ -26,6 +26,7 @@ export enum GameState {
   PlayerCount = "player_count",
   CharSelect = "char_select",
   LevelSelect = "level_select",
+  Options = "options",
   Phase1 = "phase1",
   Phase2 = "phase2",
   Phase3 = "phase3",

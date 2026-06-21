@@ -35,8 +35,9 @@ export class MenuScene implements SceneController {
       this.game.goTo(GameState.PlayerCount);
     });
     this.list.addButton(this.ui, "🗺️  Selecionar fase", () => this.game.goTo(GameState.LevelSelect));
+    this.list.addButton(this.ui, "⚙️  Opções", () => this.game.goTo(GameState.Options));
     this.list.addButton(this.ui, "🎮  Controles", () => this.toggleControls());
-    this.list.layout(0);
+    this.list.layout(-20);
 
     this.controlsPanel = this.buildControlsPanel();
 

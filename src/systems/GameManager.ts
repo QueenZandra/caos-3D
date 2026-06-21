@@ -11,6 +11,7 @@ import { MenuScene } from "../scenes/MenuScene";
 import { PlayerCountScene } from "../scenes/PlayerCountScene";
 import { CharSelectScene } from "../scenes/CharSelectScene";
 import { PhaseSelectScene } from "../scenes/PhaseSelectScene";
+import { OptionsScene } from "../scenes/OptionsScene";
 import { Phase1Scene } from "../scenes/Phase1Scene";
 import { Phase2Scene } from "../scenes/Phase2Scene";
 import { Phase3Scene } from "../scenes/Phase3Scene";
@@ -147,6 +148,8 @@ export class GameManager {
         return new CharSelectScene(this);
       case GameState.LevelSelect:
         return new PhaseSelectScene(this);
+      case GameState.Options:
+        return new OptionsScene(this);
       case GameState.Phase1:
         return new Phase1Scene(this);
       case GameState.Phase2:

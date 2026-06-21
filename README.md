@@ -135,8 +135,9 @@ Tudo é **sintetizado em runtime** com a **Web Audio API** (`src/systems/AudioMa
   de UI e fanfarra de vitória / som de derrota.
 - **Duas trilhas em loop** (menu calmo, gameplay animado) com *scheduler* lookahead
   pelo relógio do `AudioContext`.
-- Destrava no 1º gesto do usuário (exigência dos navegadores); **M** alterna o mudo
-  (persistido).
+- Destrava no 1º gesto do usuário (exigência dos navegadores); **M** alterna o mudo.
+- **⚙️ Opções** (no menu): volumes de **geral / música / efeitos** e mudo,
+  ajustáveis com ← →, tudo persistido em `localStorage`.
 
 ## 🎨 Visual e modelos
 
@@ -207,6 +208,7 @@ Feito:
 - [x] **Áudio procedural** (SFX + 2 trilhas, mudo no M).
 - [x] **Pausa real** (Retomar / Reiniciar / Menu), congelando física e lógica.
 - [x] **Progressão salva** em `localStorage` (estrelas + seleção/desbloqueio de fases).
+- [x] **Opções de volume** (geral/música/efeitos + mudo), persistidas.
 
 Pendente / a aprimorar:
 
@@ -215,7 +217,7 @@ Pendente / a aprimorar:
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos, câmera dramática
       na entrada do urubu, voo mais orgânico.
-- [ ] Opções de **volume** (hoje só mudo), **passos/ambiente** e *ducking* da música.
+- [ ] Sons de **passos/ambiente** por fase e *ducking* da música nas fanfarras.
 - [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
       shake/flash, daltonismo).
 - [ ] **Testes** automatizados, **lint/format** e *code-splitting* do bundle.
