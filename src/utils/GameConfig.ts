@@ -32,6 +32,8 @@ class GameConfigStore {
   lastResult: PhaseResult | null = null;
   /** fase atual (1..TOTAL_PHASES) — usada pela tela de resultado. */
   phase = 1;
+  /** fase em que a campanha começa ao iniciar (1 = início; outra = continuar/seleção). */
+  startPhase = 1;
 
   /** Multiplicadores do DifficultyScaler (GDD passo 2). */
   get difficulty(): { spawnRate: number; timer: number; objective: number } {

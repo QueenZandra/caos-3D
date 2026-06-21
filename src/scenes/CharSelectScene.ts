@@ -10,7 +10,7 @@ import type { Scene } from "@babylonjs/core/scene";
 
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
-import { GameState } from "../utils/Constants";
+import { GameState, phaseState } from "../utils/Constants";
 import { GameConfig, type PlayerSlot } from "../utils/GameConfig";
 import { CHAR_ORDER, CHARACTERS } from "../utils/CharacterData";
 import { createMenuScene, addTitle, type MenuPet } from "./menuHelpers";
@@ -81,7 +81,7 @@ export class CharSelectScene implements SceneController {
     this.prompt.text = "4 pets prontos! Iniciando…";
     this.picksLabel.text = "Sirius · Belatriz · Minerva · Zoe";
     // pequena pausa antes de iniciar
-    setTimeout(() => this.game.goTo(GameState.Phase1), 1200);
+    setTimeout(() => this.game.goTo(phaseState(GameConfig.startPhase)), 1200);
   }
 
   private makeSlot(index: number, charId: (typeof CHAR_ORDER)[number]): PlayerSlot {
@@ -130,7 +130,7 @@ export class CharSelectScene implements SceneController {
     if (this.currentPlayer >= GameConfig.playerCount) {
       this.done = true;
       this.prompt.text = "Pronto! Iniciando…";
-      setTimeout(() => this.game.goTo(GameState.Phase1), 900);
+      setTimeout(() => this.game.goTo(phaseState(GameConfig.startPhase)), 900);
       return;
     }
     // move cursor para o próximo livre

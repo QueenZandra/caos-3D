@@ -25,6 +25,7 @@ export enum GameState {
   Menu = "menu",
   PlayerCount = "player_count",
   CharSelect = "char_select",
+  LevelSelect = "level_select",
   Phase1 = "phase1",
   Phase2 = "phase2",
   Phase3 = "phase3",
@@ -38,6 +39,18 @@ export enum GameState {
 
 /** Número de fases jogáveis implementadas. */
 export const TOTAL_PHASES = 8;
+
+/** Nomes das 8 fases (índice 0 = Fase 1). */
+export const PHASE_NAMES = [
+  "O Carteiro do Mal",
+  "Os Pássaros Abusados",
+  "A Rebelião das Almofadas",
+  "O Roubo Épico da Cozinha",
+  "O Vizinho Invasor",
+  "A Moto do Terror",
+  "Caos Total",
+  "Operação Perdão",
+] as const;
 
 /** Mapeia um número de fase para o estado de jogo correspondente. */
 export function phaseState(n: number): GameState {

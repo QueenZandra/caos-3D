@@ -7,6 +7,7 @@ import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState } from "../utils/Constants";
 import { GameConfig } from "../utils/GameConfig";
+import { Progress } from "../utils/Progress";
 import { createMenuScene, MenuList, addTitle } from "./menuHelpers";
 
 /** Menu principal animado. */
@@ -25,10 +26,17 @@ export class MenuScene implements SceneController {
     this.ui = AdvancedDynamicTexture.CreateFullscreenUI("menuUI", true, scene);
     addTitle(this.ui, "🐾 Caos em Casa 🐾", "A Saga dos Pets · Babylon.js 3D");
 
+    const cont = Progress.maxUnlocked;
+    const playLabel = cont > 1 ? `▶  Continuar (Fase ${cont})` : "▶  Jogar";
+
     this.list = new MenuList();
-    this.list.addButton(this.ui, "▶  Jogar", () => this.game.goTo(GameState.PlayerCount));
+    this.list.addButton(this.ui, playLabel, () => {
+      GameConfig.startPhase = cont;
+      this.game.goTo(GameState.PlayerCount);
+    });
+    this.list.addButton(this.ui, "🗺️  Selecionar fase", () => this.game.goTo(GameState.LevelSelect));
     this.list.addButton(this.ui, "🎮  Controles", () => this.toggleControls());
-    this.list.layout(20);
+    this.list.layout(0);
 
     this.controlsPanel = this.buildControlsPanel();
 

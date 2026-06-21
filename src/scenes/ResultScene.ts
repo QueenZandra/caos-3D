@@ -6,6 +6,7 @@ import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, TOTAL_PHASES, phaseState } from "../utils/Constants";
 import { GameConfig } from "../utils/GameConfig";
+import { Progress } from "../utils/Progress";
 import { createMenuScene, MenuList, addTitle } from "./menuHelpers";
 import { Audio } from "../systems/AudioManager";
 
@@ -23,6 +24,9 @@ export class ResultScene implements SceneController {
     const win = r?.win ?? false;
     const stars = r?.stars ?? 0;
     const champion = win && GameConfig.phase >= TOTAL_PHASES;
+
+    // persiste estrelas e desbloqueia a próxima fase
+    Progress.recordResult(GameConfig.phase, win, stars);
 
     Audio.sfx(win ? "win" : "lose");
 
