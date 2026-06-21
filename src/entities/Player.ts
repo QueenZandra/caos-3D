@@ -13,8 +13,8 @@ import type { AnimationGroup } from "@babylonjs/core/Animations/animationGroup";
 import type { CharacterDef } from "../utils/CharacterData";
 import type { PlayerSlot } from "../utils/GameConfig";
 import type { FrameInput } from "../systems/InputManager";
-import { createToonMaterial, applyOutline } from "../utils/Visual";
 import { tryLoadModel } from "../utils/AssetLoader";
+import { buildPetModel } from "./PetModel";
 
 /** Ganchos que a fase fornece para as habilidades afetarem o mundo. */
 export interface AbilityHooks {
@@ -105,26 +105,11 @@ export class Player {
     this.placeholder = this.buildPlaceholder();
   }
 
-  /** Placeholder primitivo (cápsula + focinho) sob a visualRoot. */
+  /** Placeholder: pet procedural chibi (ver PetModel.ts) sob a visualRoot. */
   private buildPlaceholder(): Mesh {
-    const cap = MeshBuilder.CreateCapsule(
-      `${this.def.id}_ph`,
-      { radius: PLAYER_RADIUS, height: PLAYER_HEIGHT },
-      this.scene,
-    );
-    cap.material = createToonMaterial(this.scene, this.def.color, this.def.id);
-    applyOutline(cap, 0.05);
-    cap.parent = this.visualRoot;
-    cap.position.setAll(0);
-
-    const snout = MeshBuilder.CreateSphere(`${this.def.id}_snout`, { diameter: 0.35 }, this.scene);
-    snout.material = createToonMaterial(this.scene, "#FFF8F0", `${this.def.id}_snout`);
-    applyOutline(snout, 0.03);
-    snout.parent = this.visualRoot;
-    snout.position = new Vector3(0, 0.15, PLAYER_RADIUS + 0.1);
-
-    this.placeholderParts = [cap, snout];
-    return cap;
+    const { parts, main } = buildPetModel(this.scene, this.visualRoot, this.def);
+    this.placeholderParts = parts;
+    return main;
   }
 
   /**
