@@ -3,6 +3,7 @@ import type { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin
 import { GameState } from "../utils/Constants";
 import { InputManager } from "./InputManager";
 import { initPhysics } from "./PhysicsSystem";
+import { Audio } from "./AudioManager";
 import type { SceneController } from "../scenes/SceneController";
 
 import { MenuScene } from "../scenes/MenuScene";
@@ -41,6 +42,12 @@ export class GameManager {
     this.input = new InputManager();
 
     window.addEventListener("resize", () => this.engine.resize());
+
+    // áudio: destrava no 1º gesto e tecla M alterna mudo globalmente
+    Audio.unlock();
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "m" || e.key === "M") Audio.toggleMute();
+    });
   }
 
   async start(): Promise<void> {
@@ -73,6 +80,9 @@ export class GameManager {
   private swap(state: GameState): void {
     this.current?.dispose();
     this.current = this.build(state);
+    // trilha conforme o contexto: fases = gameplay; menus/resultado = calmo
+    const inPhase = state.startsWith("phase");
+    Audio.music(inPhase ? "gameplay" : "menu");
   }
 
   private build(state: GameState): SceneController {

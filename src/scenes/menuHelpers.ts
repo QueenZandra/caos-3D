@@ -9,6 +9,7 @@ import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { CHAR_ORDER, CHARACTERS } from "../utils/CharacterData";
 import { PALETTE } from "../utils/Constants";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
+import { Audio } from "../systems/AudioManager";
 
 import { AdvancedDynamicTexture } from "@babylonjs/gui/2D/advancedDynamicTexture";
 import { Rectangle } from "@babylonjs/gui/2D/controls/rectangle";
@@ -110,10 +111,12 @@ export class MenuList {
   move(dir: number): void {
     if (this.items.length === 0) return;
     this.index = (this.index + dir + this.items.length) % this.items.length;
+    Audio.sfx("uiMove");
     this.refresh();
   }
 
   confirm(): void {
+    Audio.sfx("uiConfirm");
     this.items[this.index]?.onSelect();
   }
 

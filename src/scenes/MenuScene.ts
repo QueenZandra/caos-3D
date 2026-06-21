@@ -44,7 +44,7 @@ export class MenuScene implements SceneController {
   private buildControlsPanel(): Rectangle {
     const panel = new Rectangle("controls");
     panel.width = "440px";
-    panel.height = "260px";
+    panel.height = "290px";
     panel.cornerRadius = 18;
     panel.background = "#1A1A2EEE";
     panel.color = "#9B5DE5";
@@ -59,7 +59,8 @@ export class MenuScene implements SceneController {
       "Habilidade:  E / Shift / Botão Oeste (□ / X)\n" +
       "Largar:  Q / Ctrl / Botão Leste (○ / B)\n" +
       "Ação conjunta:  F / Botão Norte (△ / Y)\n" +
-      "Pausar:  Esc / Start";
+      "Pausar:  Esc / Start\n" +
+      "Mudo (áudio):  M";
     txt.color = "#FFFFFF";
     txt.fontSize = 16;
     txt.textWrapping = true;

@@ -10,6 +10,7 @@ import {
 } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
+import { Audio } from "../systems/AudioManager";
 
 let counter = 0;
 
@@ -66,6 +67,7 @@ export class Food {
     this.carrier = playerIndex;
     this.setHighlight(false);
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    Audio.sfx("pickup");
   }
 
   followCarrier(pos: Vector3, stackIndex: number): void {
@@ -83,12 +85,14 @@ export class Food {
   collect(): void {
     if (this.state === "collected" || this.state === "broken") return;
     this.state = "collected";
+    Audio.sfx("deliver");
     this.dispose();
   }
 
   break(): void {
     if (this.state === "broken") return;
     this.state = "broken";
+    Audio.sfx("broke");
     // achata e fica vermelho (visual de quebrado)
     this.mesh.scaling.y = 0.2;
     (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString("#C0392B");

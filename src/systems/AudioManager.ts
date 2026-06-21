@@ -1,0 +1,336 @@
+/**
+ * Áudio 100% procedural (Web Audio API) — mesma filosofia dos modelos: nada de
+ * arquivos externos para licenciar/baixar. Sintetiza efeitos sonoros (latido,
+ * miado, coleta, susto, vitória…) e duas trilhas em loop (menu calmo e gameplay
+ * animado) usando osciladores + envelopes + ruído.
+ *
+ * Uso: `Audio.sfx("bark")`, `Audio.music("gameplay")`, `Audio.toggleMute()`.
+ * Singleton exportado como `Audio`. O AudioContext só "destrava" após o
+ * primeiro gesto do usuário (exigência dos navegadores) — ver unlock().
+ */
+
+export type SfxName =
+  | "uiMove"
+  | "uiConfirm"
+  | "uiBack"
+  | "bark"
+  | "meow"
+  | "whoosh"
+  | "pickup"
+  | "deliver"
+  | "broke"
+  | "stun"
+  | "win"
+  | "lose";
+
+export type MusicTrack = "menu" | "gameplay";
+
+interface Note {
+  /** início (s) dentro do loop */
+  t: number;
+  /** frequência (Hz) */
+  f: number;
+  /** duração (s) */
+  d: number;
+  /** ganho relativo (0..1) */
+  g?: number;
+  type?: OscillatorType;
+}
+
+interface TrackDef {
+  /** comprimento do loop (s) */
+  loop: number;
+  notes: Note[];
+}
+
+const STORAGE_KEY = "caos_muted";
+
+/** midi → Hz (A4=69=440). */
+function midi(n: number): number {
+  return 440 * Math.pow(2, (n - 69) / 12);
+}
+
+/** Constrói uma trilha simples a partir de uma sequência de graus. */
+function buildTracks(): Record<MusicTrack, TrackDef> {
+  // Menu: arpejo pentatônico calmo (Cmaj), 4s de loop.
+  const menuNotes: Note[] = [];
+  const menuSteps = [60, 64, 67, 72, 67, 64]; // C E G C G E
+  menuSteps.forEach((m, i) => {
+    menuNotes.push({ t: i * (4 / menuSteps.length), f: midi(m), d: 0.7, g: 0.5, type: "triangle" });
+  });
+  // baixo suave
+  menuNotes.push({ t: 0, f: midi(36), d: 2, g: 0.4, type: "sine" });
+  menuNotes.push({ t: 2, f: midi(43), d: 2, g: 0.4, type: "sine" });
+
+  // Gameplay: groove animado, 2s de loop, baixo marcante + melodia saltitante.
+  const gpNotes: Note[] = [];
+  const bass = [40, 40, 47, 45]; // E E B A
+  bass.forEach((m, i) => {
+    gpNotes.push({ t: i * 0.5, f: midi(m), d: 0.45, g: 0.55, type: "sawtooth" });
+  });
+  const lead = [64, 67, 71, 67, 69, 67, 64, 62]; // melodia
+  lead.forEach((m, i) => {
+    gpNotes.push({ t: i * 0.25, f: midi(m), d: 0.18, g: 0.32, type: "square" });
+  });
+
+  return {
+    menu: { loop: 4, notes: menuNotes },
+    gameplay: { loop: 2, notes: gpNotes },
+  };
+}
+
+class AudioManager {
+  private ctx: AudioContext | null = null;
+  private master: GainNode | null = null;
+  private musicGain: GainNode | null = null;
+  private sfxGain: GainNode | null = null;
+  private noiseBuffer: AudioBuffer | null = null;
+
+  private muted = false;
+  private unlocked = false;
+
+  private tracks = buildTracks();
+  private currentTrack: MusicTrack | null = null;
+  private schedulerId: number | null = null;
+  private nextLoopStart = 0;
+
+  constructor() {
+    try {
+      this.muted = localStorage.getItem(STORAGE_KEY) === "1";
+    } catch {
+      /* localStorage indisponível */
+    }
+  }
+
+  /** Registra listeners para destravar o áudio no 1º gesto do usuário. */
+  unlock(): void {
+    if (this.unlocked) return;
+    const resume = () => {
+      this.ensure();
+      this.ctx?.resume();
+      // re-arma a trilha pendente, se houver
+      if (this.currentTrack && this.schedulerId === null) {
+        this.startScheduler();
+      }
+    };
+    window.addEventListener("pointerdown", resume, { once: false });
+    window.addEventListener("keydown", resume, { once: false });
+    this.unlocked = true;
+  }
+
+  /** Cria o grafo de áudio sob demanda. */
+  private ensure(): AudioContext {
+    if (this.ctx) return this.ctx;
+    const ctx = new AudioContext();
+    this.master = ctx.createGain();
+    this.master.gain.value = this.muted ? 0 : 0.9;
+    this.master.connect(ctx.destination);
+
+    this.musicGain = ctx.createGain();
+    this.musicGain.gain.value = 0.35;
+    this.musicGain.connect(this.master);
+
+    this.sfxGain = ctx.createGain();
+    this.sfxGain.gain.value = 0.8;
+    this.sfxGain.connect(this.master);
+
+    // buffer de ruído branco reutilizável (whoosh / susto / quebra)
+    const len = ctx.sampleRate * 1;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    this.noiseBuffer = buf;
+
+    this.ctx = ctx;
+    return ctx;
+  }
+
+  get isMuted(): boolean {
+    return this.muted;
+  }
+
+  toggleMute(): boolean {
+    this.setMuted(!this.muted);
+    return this.muted;
+  }
+
+  setMuted(m: boolean): void {
+    this.muted = m;
+    try {
+      localStorage.setItem(STORAGE_KEY, m ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+    if (this.master && this.ctx) {
+      this.master.gain.setTargetAtTime(m ? 0 : 0.9, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  // ─── SFX ───────────────────────────────────────────────────────────────
+  /** Oscilador único com envelope ADSR curto. */
+  private blip(
+    freq: number,
+    dur: number,
+    type: OscillatorType,
+    gain: number,
+    when: number,
+    bend = 0,
+    dest: GainNode | null = null,
+  ): void {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, when);
+    if (bend !== 0) osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq + bend), when + dur);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(gain, when + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    osc.connect(g);
+    g.connect(dest ?? this.sfxGain!);
+    osc.start(when);
+    osc.stop(when + dur + 0.02);
+  }
+
+  /** Rajada de ruído filtrado (whoosh / susto / quebra). */
+  private noise(dur: number, gain: number, filterHz: number, when: number, sweep = 0): void {
+    const ctx = this.ctx!;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(filterHz, when);
+    if (sweep !== 0) filter.frequency.exponentialRampToValueAtTime(Math.max(80, filterHz + sweep), when + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gain, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(this.sfxGain!);
+    src.start(when);
+    src.stop(when + dur);
+  }
+
+  /** Toca um efeito sonoro. Seguro chamar a qualquer momento. */
+  sfx(name: SfxName): void {
+    const ctx = this.ensure();
+    if (ctx.state === "suspended") void ctx.resume();
+    const t = ctx.currentTime;
+
+    switch (name) {
+      case "uiMove":
+        this.blip(520, 0.07, "square", 0.25, t);
+        break;
+      case "uiConfirm":
+        this.blip(660, 0.08, "square", 0.3, t);
+        this.blip(990, 0.12, "square", 0.25, t + 0.06);
+        break;
+      case "uiBack":
+        this.blip(440, 0.09, "square", 0.28, t, -160);
+        break;
+      case "bark":
+        // au-au: dois pulsos curtos com queda de pitch
+        this.blip(320, 0.1, "sawtooth", 0.5, t, -140);
+        this.blip(300, 0.12, "sawtooth", 0.45, t + 0.14, -120);
+        break;
+      case "meow":
+        // miado: sobe e desce
+        this.blip(540, 0.18, "triangle", 0.4, t, 180);
+        this.blip(720, 0.16, "triangle", 0.35, t + 0.16, -260);
+        break;
+      case "whoosh":
+        this.noise(0.3, 0.4, 700, t, 900);
+        break;
+      case "pickup":
+        this.blip(700, 0.06, "triangle", 0.35, t);
+        this.blip(1050, 0.08, "triangle", 0.3, t + 0.05);
+        break;
+      case "deliver":
+        // arpejo ascendente alegre
+        this.blip(660, 0.09, "square", 0.35, t);
+        this.blip(880, 0.09, "square", 0.35, t + 0.08);
+        this.blip(1320, 0.14, "square", 0.32, t + 0.16);
+        break;
+      case "broke":
+        this.noise(0.25, 0.5, 1200, t, -900);
+        this.blip(160, 0.18, "sawtooth", 0.3, t, -80);
+        break;
+      case "stun":
+        this.blip(880, 0.2, "sine", 0.3, t, -500);
+        this.noise(0.2, 0.25, 2000, t);
+        break;
+      case "win": {
+        // fanfarra
+        const seq = [60, 64, 67, 72, 76];
+        seq.forEach((m, i) => this.blip(midi(m), 0.22, "square", 0.4, t + i * 0.12));
+        this.blip(midi(79), 0.5, "square", 0.4, t + seq.length * 0.12);
+        break;
+      }
+      case "lose": {
+        // descida triste
+        const seq = [60, 58, 55, 51];
+        seq.forEach((m, i) => this.blip(midi(m), 0.3, "triangle", 0.4, t + i * 0.18, -20));
+        break;
+      }
+    }
+  }
+
+  // ─── Música ──────────────────────────────────────────────────────────────
+  /** Troca a trilha em loop (no-op se já for a atual). */
+  music(track: MusicTrack | null): void {
+    if (this.currentTrack === track) return;
+    this.currentTrack = track;
+    this.ensure();
+    if (track === null) {
+      this.stopScheduler();
+      return;
+    }
+    this.startScheduler();
+  }
+
+  stopMusic(): void {
+    this.music(null);
+  }
+
+  private startScheduler(): void {
+    this.stopScheduler();
+    const ctx = this.ctx;
+    if (!ctx || !this.currentTrack) return;
+    if (ctx.state === "suspended") void ctx.resume();
+    this.nextLoopStart = ctx.currentTime + 0.1;
+    // lookahead simples: agenda o próximo loop com antecedência
+    this.schedulerId = window.setInterval(() => this.tick(), 50);
+    this.tick();
+  }
+
+  private stopScheduler(): void {
+    if (this.schedulerId !== null) {
+      clearInterval(this.schedulerId);
+      this.schedulerId = null;
+    }
+  }
+
+  private tick(): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.currentTrack) return;
+    const def = this.tracks[this.currentTrack];
+    // agenda enquanto o início do próximo loop estiver dentro de ~200ms à frente
+    while (this.nextLoopStart < ctx.currentTime + 0.2) {
+      for (const n of def.notes) {
+        this.blip(
+          n.f,
+          n.d,
+          n.type ?? "triangle",
+          n.g ?? 0.4,
+          this.nextLoopStart + n.t,
+          0,
+          this.musicGain, // roteia pelo barramento de música
+        );
+      }
+      this.nextLoopStart += def.loop;
+    }
+  }
+}
+
+/** Singleton global de áudio. */
+export const Audio = new AudioManager();

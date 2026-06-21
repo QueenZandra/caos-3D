@@ -8,6 +8,7 @@ import {
   PhysicsMotionType,
 } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
+import { Audio } from "../systems/AudioManager";
 
 let counter = 0;
 
@@ -59,6 +60,7 @@ export class Cushion {
     this.state = "carried";
     this.carrier = playerIndex;
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    Audio.sfx("pickup");
   }
 
   followCarrier(pos: Vector3, stackIndex: number): void {

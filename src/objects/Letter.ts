@@ -8,6 +8,7 @@ import {
   PhysicsMotionType,
 } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { createToonMaterial, applyOutline } from "../utils/Visual";
+import { Audio } from "../systems/AudioManager";
 
 let counter = 0;
 
@@ -54,6 +55,7 @@ export class Letter {
     this.state = "carried";
     this.carrier = playerIndex;
     this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    Audio.sfx("pickup");
   }
 
   /** Reposiciona a carta sobre o portador. stackIndex empilha múltiplas. */
