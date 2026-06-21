@@ -13,6 +13,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 import { GameConfig } from "../utils/GameConfig";
 import { enablePhysics } from "../systems/PhysicsSystem";
 import { CameraSystem } from "../systems/CameraSystem";
@@ -197,6 +198,7 @@ export class Phase6Scene implements SceneController {
     if (!this.passScored && this.noise >= THRESHOLD) {
       this.passScored = true;
       this.scared++;
+      Audio.sfx("deliver");
       this.bikes.forEach((b) => b.flee());
       this.cam.shake(0.4, 0.3);
       this.hud.floatingText(new Vector3(0, 3, STREET_Z), "AFUGENTADA! 🏍️💨", PALETTE.teal);
@@ -206,6 +208,7 @@ export class Phase6Scene implements SceneController {
     if (this.bikes.every((b) => b.offscreen(X_LIMIT))) {
       if (!this.passScored) {
         this.cam.shake(0.6, 0.45);
+        Audio.sfx("broke");
         this.hud.floatingText(new Vector3(0, 3, STREET_Z), "vrumm... passou 😬", PALETTE.orange);
       }
       this.bikes.forEach((b) => b.dispose());

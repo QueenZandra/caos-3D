@@ -14,6 +14,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 import { GameConfig } from "../utils/GameConfig";
 import type { CharId } from "../utils/Constants";
 import { enablePhysics } from "../systems/PhysicsSystem";
@@ -246,6 +247,7 @@ export class Phase2Scene implements SceneController {
           const res = nest.build(dt, this.buildRate);
           if (res === "permanent") {
             this.permanent++;
+            Audio.sfx("broke");
             this.hud.floatingText(nest.position, "🥚!", PALETTE.pink);
             b.state = "leaving";
             break;
@@ -313,6 +315,7 @@ export class Phase2Scene implements SceneController {
     const idx = this.nests.indexOf(best);
     best.reset();
     this.destroyed++;
+    Audio.sfx("deliver");
     this.hud.floatingText(player.position, "-1 🪺", PALETTE.teal);
     const bird = this.birds.find((b) => b.nestIndex === idx && b.state !== "leaving");
     if (bird) bird.state = "leaving";
@@ -347,6 +350,7 @@ export class Phase2Scene implements SceneController {
       this.vulture.position.y = 1.4 + Math.sin(performance.now() * 0.02) * 0.2; // treme
       if (this.vultureExpelTimer >= 1.5) {
         this.destroyed++;
+        Audio.sfx("deliver");
         this.hud.floatingText(this.vulture.position, "URUBU EXPULSO! 🎉", PALETTE.teal);
         this.vulture.dispose();
         this.vulture = null;

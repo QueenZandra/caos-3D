@@ -79,6 +79,7 @@ export class Cushion {
   destroy(): void {
     if (this.state === "destroyed") return;
     this.state = "destroyed";
+    Audio.sfx("broke");
     this.dispose();
   }
 

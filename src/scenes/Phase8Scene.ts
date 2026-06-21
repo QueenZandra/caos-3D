@@ -14,6 +14,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 import type { CharId } from "../utils/Constants";
 import { GameConfig } from "../utils/GameConfig";
 import { enablePhysics } from "../systems/PhysicsSystem";
@@ -210,6 +211,7 @@ export class Phase8Scene implements SceneController {
     this.anger[owner] = Math.max(0, this.anger[owner] - amt);
     this.actionCd[index] = ACTION_CD;
     this.performing[index] = 1.0;
+    Audio.sfx("deliver");
     this.hud.floatingText(player.position, cuteText(player.def.id), player.def.color);
     this.hud.floatingText(OWNERS[owner].pos, "❤️", PALETTE.pink);
   }

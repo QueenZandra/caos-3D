@@ -14,6 +14,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 import { GameConfig } from "../utils/GameConfig";
 import { enablePhysics } from "../systems/PhysicsSystem";
 import { CameraSystem } from "../systems/CameraSystem";
@@ -185,6 +186,7 @@ export class Phase5Scene implements SceneController {
       if (Math.hypot(inv.position.x - center.x, inv.position.z - center.z) <= radius) {
         if (inv.hit()) {
           this.expelled++;
+          Audio.sfx("deliver");
           this.hud.floatingText(inv.position, "FORA! 🐾", PALETTE.teal);
         }
       }
@@ -207,6 +209,7 @@ export class Phase5Scene implements SceneController {
     }
     if (best && best.hit()) {
       this.expelled++;
+      Audio.sfx("deliver");
       this.hud.floatingText(best.position, "FORA! 🐾", PALETTE.teal);
     }
   }
@@ -218,6 +221,7 @@ export class Phase5Scene implements SceneController {
         inv.moveTowards(HOUSE, dt);
         if (Math.hypot(inv.position.x - HOUSE.x, inv.position.z - HOUSE.z) < HOUSE_R) {
           this.entered++;
+          Audio.sfx("broke");
           this.hud.floatingText(inv.position, "entrou! 😱", PALETTE.orange);
           inv.dispose();
           this.invaders.splice(i, 1);
@@ -278,6 +282,7 @@ export class Phase5Scene implements SceneController {
     this.boss.moveTowards(HOUSE, dt);
     if (Math.hypot(this.boss.position.x - HOUSE.x, this.boss.position.z - HOUSE.z) < HOUSE_R + 1) {
       this.entered++;
+      Audio.sfx("broke");
       this.hud.floatingText(this.boss.position, "o boss entrou! 😱", PALETTE.orange);
       this.boss.dispose();
       this.boss = null;
@@ -292,6 +297,7 @@ export class Phase5Scene implements SceneController {
       this.boss.mesh.rotation.z = Math.sin(performance.now() * 0.03) * 0.2;
       if (this.bossExpelTimer >= 1.5) {
         this.expelled++;
+        Audio.sfx("deliver");
         this.hud.floatingText(this.boss.position, "GATO EXPULSO! 🎉", PALETTE.teal);
         this.cam.shake(0.6, 0.4);
         this.boss.dispose();

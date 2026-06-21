@@ -24,6 +24,7 @@ import { Mailman } from "../entities/Mailman";
 import { Letter } from "../objects/Letter";
 import { HUD } from "../ui/HUD";
 import { PALETTE } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 
 const ARENA = 28; // lado interno
 const HALF = ARENA / 2;
@@ -252,6 +253,7 @@ export class Phase1Scene implements SceneController {
         l.destroy();
         this.collected++;
         player.carrying = Math.max(0, player.carrying - 1);
+        Audio.sfx("deliver");
         this.hud.floatingText(player.position, "+1 ✅", PALETTE.teal);
         continue;
       }

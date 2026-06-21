@@ -13,6 +13,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
+import { Audio } from "../systems/AudioManager";
 import { GameConfig } from "../utils/GameConfig";
 import { enablePhysics } from "../systems/PhysicsSystem";
 import { CameraSystem } from "../systems/CameraSystem";
@@ -188,7 +189,10 @@ export class Phase7Scene implements SceneController {
     // 1) expulsar invasor próximo
     for (const inv of this.invaders) {
       if (inv.state === "advancing" && this.horiz(inv.position, player.position) < EXPEL_R) {
-        if (inv.hit()) this.hud.floatingText(inv.position, "FORA! 🐾", PALETTE.teal);
+        if (inv.hit()) {
+          Audio.sfx("deliver");
+          this.hud.floatingText(inv.position, "FORA! 🐾", PALETTE.teal);
+        }
         return;
       }
     }
@@ -225,6 +229,7 @@ export class Phase7Scene implements SceneController {
       if (this.horiz(p.position, BIN) < BIN_R) {
         l.destroy();
         p.carrying = Math.max(0, p.carrying - 1);
+        Audio.sfx("deliver");
         this.hud.floatingText(p.position, "+1 🗑️", PALETTE.teal);
         continue;
       }
