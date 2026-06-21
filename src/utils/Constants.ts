@@ -30,14 +30,16 @@ export enum GameState {
   Phase3 = "phase3",
   Phase4 = "phase4",
   Phase5 = "phase5",
+  Phase6 = "phase6",
   Result = "result",
 }
 
 /** Número de fases jogáveis implementadas. */
-export const TOTAL_PHASES = 5;
+export const TOTAL_PHASES = 6;
 
 /** Mapeia um número de fase para o estado de jogo correspondente. */
 export function phaseState(n: number): GameState {
+  if (n === 6) return GameState.Phase6;
   if (n === 5) return GameState.Phase5;
   if (n === 4) return GameState.Phase4;
   if (n === 3) return GameState.Phase3;

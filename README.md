@@ -89,6 +89,12 @@ Sirius** expulsa vários de uma vez); os "durões" precisam de 2 acertos. Uma
 (boss)** exige **2 pets juntos** por ~1,5s para ser expulso. Meta: expulsar 20 com
 menos de **3** entrando na casa. (O split-view ajuda a cobrir pontos distantes.)
 
+**Fase 6 — "A Moto do Terror"**: a moto cruza a rua repetidamente. Corra até uma
+das **5 janelas** da fachada e faça **barulho** (interagir = latir/miar) para encher
+a **barra de barulho** antes da moto passar — barra cheia = moto afugentada. O
+**Latido do Sirius** enche rápido. A câmera **treme** a cada passagem. Meta:
+afugentar **15** em 2 minutos, terminando com a **carreata final em V** (5 motos).
+
 As fases são encadeadas: ao vencer, a tela de resultado oferece **➡️ Próxima fase**.
 
 **Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
@@ -149,7 +155,8 @@ src/
 - [x] **Fase 3 "A Rebelião das Almofadas"** (rigidbodies, vento, puff que persegue, camera shake).
 - [x] **Fase 4 "O Roubo Épico da Cozinha"** (cascata física, preview vermelho, boost co-op).
 - [x] **Fase 5 "O Vizinho Invasor"** (invasores com IA, galinha caótica, boss Gato Gigante).
-- [ ] Fases 6–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
+- [x] **Fase 6 "A Moto do Terror"** (janelas, barra de barulho, carreata final em V).
+- [ ] Fases 7–8 reaproveitando os mesmos sistemas (cada uma é uma nova `*.Scene.ts`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
       câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
 - [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
