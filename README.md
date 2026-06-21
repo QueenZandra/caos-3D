@@ -5,8 +5,9 @@ navegador com **Babylon.js + TypeScript + Vite** e física **Havok**.
 
 > Os donos saíram. Os pets — Sirius, Belatriz, Minerva e Zoe — viram heróis e
 > espalham o caos pela casa. **Campanha completa: as 8 fases do GDD**, jogáveis de
-> ponta a ponta (Menu → seleção → fases encadeadas → final), com placeholders
-> primitivos e pipeline pronto para os modelos GLB dos pets.
+> ponta a ponta (Menu → seleção → fases encadeadas → final), com **progressão
+> salva**, **áudio procedural**, **pets procedurais** e pipeline pronto para os
+> modelos GLB reais dos pets.
 
 ## ▶️ Como rodar
 
@@ -18,8 +19,9 @@ npm run dev      # abre em http://localhost:5173
 Build de produção:
 
 ```bash
-npm run build    # gera /dist (pronto para deploy estático)
+npm run build    # tsc --noEmit + gera /dist (pronto para deploy estático)
 npm run preview  # serve o build localmente
+npm run typecheck
 ```
 
 > O binário WASM do Havok é copiado automaticamente para `public/` pelos scripts
@@ -35,29 +37,22 @@ npm run preview  # serve o build localmente
 | Largar            | Q          | Ctrl dir.  | Botão Leste (○ / B)|
 | Ação conjunta     | F          | /          | Botão Norte (△ / Y)|
 | Pausar            | Esc        | Esc        | Start              |
+| Mudo (áudio)      | M          | M          | —                  |
 
 - **P1 e P2** podem jogar no mesmo teclado. **P3 e P4** precisam de gamepad.
 - Tipo de gamepad (PlayStation / Xbox / genérico) é detectado pelo `id` do dispositivo.
+- **Pausa real**: Esc/Start abre o menu de pausa (Retomar / Reiniciar fase / Menu),
+  congelando física e lógica enquanto aberto.
 
-## 🕹️ O que já está jogável
+## 🕹️ Campanha (8 fases)
 
-Fluxo completo: **Menu → Quantidade de jogadores → Seleção de personagens → Fase 1 → Resultado**.
+Fluxo: **Menu → (Continuar / Selecionar fase) → Quantidade de jogadores → Seleção
+de pets → Fase → Resultado**. Ao vencer, o resultado oferece **➡️ Próxima fase**,
+até o **🏆 final**, e o progresso fica salvo (ver [Progressão](#-progressão)).
 
 **Fase 1 — "O Carteiro do Mal"**: o carteiro joga cartas pela porta (física real:
 elas deslizam e se acumulam). Pegue as cartas e leve até a lixeira (zona verde)
 antes do tempo acabar. Mais de 10 cartas no chão = *slowzone* (todos ficam lentos).
-
-Os 4 pets com habilidades funcionais:
-
-| Pet         | Habilidade        | Efeito                                                       |
-| ----------- | ----------------- | ------------------------------------------------------------ |
-| 🐕 Sirius   | Latido Poderoso   | Onda que atordoa o carteiro num raio de 3 (pausa o envio).   |
-| 🐕 Belatriz | Corrida Veloz     | Velocidade 2× por 3s e carrega **2** cartas ao mesmo tempo.  |
-| 🐱 Minerva  | Escalar           | Impulso vertical + onda de empurrão.                         |
-| 🐱 Zoe      | Furtividade       | Fica semi-transparente; ao voltar, solta onda de susto.      |
-
-Dificuldade adaptativa (`DifficultyScaler`): com menos jogadores, menos cartas,
-mais tempo e objetivo menor. Estrelas (⭐–⭐⭐⭐) por tempo restante e bagunça.
 
 **Fase 2 — "Os Pássaros Abusados"**: pássaros voam até pontos de ninho e os
 constroem em **3 estágios** (gravetos → forrado → ovos = permanente). Destrua os
@@ -107,11 +102,54 @@ cada pet ao dono certo e use a **ação fofa** (interagir) para reduzir a raiva 
 **Zoe** dá um golpe único forte. Quando todos fazem fofura juntos, dispara o
 **SUPER FOFO** 💖. Zere as duas barras em 90s → **abraço com confetes**.
 
-A campanha completa é encadeada: ao vencer, a tela de resultado oferece **➡️ Próxima
-fase**, até o **🏆 final**.
+## 🐶 Personagens e habilidades
 
-**Split-view**: afaste os pets pela casa e a tela se divide automaticamente em
-duas, cada metade seguindo um grupo; ao se reaproximarem, volta a ser única.
+| Pet         | Habilidade        | Efeito                                                       |
+| ----------- | ----------------- | ------------------------------------------------------------ |
+| 🐕 Sirius   | Latido Poderoso   | Onda sonora 3D que atordoa inimigos num raio de 3.           |
+| 🐕 Belatriz | Corrida Veloz     | Velocidade 2× por 3s e carrega **2** objetos ao mesmo tempo. |
+| 🐱 Minerva  | Escalar           | Impulso vertical + onda de empurrão (alcança lugares altos). |
+| 🐱 Zoe      | Furtividade       | Fica semi-transparente; ao voltar, solta onda de susto.      |
+
+Dificuldade adaptativa (`DifficultyScaler`): com menos jogadores, menos objetivo,
+mais tempo e spawns mais lentos. Estrelas (⭐–⭐⭐⭐) por desempenho (tempo restante
+e bagunça).
+
+## 💾 Progressão
+
+O avanço é **salvo em `localStorage`** (`src/utils/Progress.ts`):
+
+- **Melhores estrelas por fase** e a **fase mais avançada desbloqueada**.
+- No menu, o botão vira **"▶ Continuar (Fase N)"** quando há progresso.
+- **🗺️ Selecionar fase**: grade 4×2 mostrando **🔒** nas bloqueadas e **⭐** nas
+  vencidas; fases abrem conforme você vence as anteriores.
+- Tolerante a dados ausentes/corrompidos e a `localStorage` indisponível (segue
+  em memória). Há `Progress.reset()` pronto para um futuro botão de "zerar".
+
+## 🔊 Áudio
+
+Tudo é **sintetizado em runtime** com a **Web Audio API** (`src/systems/AudioManager.ts`)
+— sem arquivos de áudio para licenciar/baixar, funciona offline:
+
+- **SFX**: latido, miado, whoosh, pegar, entregar, quebrar, susto/stun, navegação
+  de UI e fanfarra de vitória / som de derrota.
+- **Duas trilhas em loop** (menu calmo, gameplay animado) com *scheduler* lookahead
+  pelo relógio do `AudioContext`.
+- Destrava no 1º gesto do usuário (exigência dos navegadores); **M** alterna o mudo
+  (persistido).
+
+## 🎨 Visual e modelos
+
+- **Pets procedurais** (`src/entities/PetModel.ts`): cada personagem é montado de
+  primitivas em estilo chibi (cachorro x gata, cor do pelo, orelhas, cauda,
+  acessórios), reconhecível tanto em jogo quanto nos menus.
+- **Pipeline de GLB com fallback** (`src/utils/AssetLoader.ts`): o `Player` separa
+  o collider (cápsula física invisível) do visual (`visualRoot`). `loadModel()`
+  tenta carregar o `.glb` do personagem e, se existir, **substitui o pet procedural**
+  (auto-escala + animações `idle`/`walk` do Mixamo + sombras). Se não existir, segue
+  com o procedural — nada quebra, e a lógica de gameplay é indiferente ao visual.
+- **Toon shading** via `StandardMaterial` (cor chapada + emissive) e `renderOutline`
+  nativo do Babylon, sem dependências extras.
 
 ## 🏗️ Arquitetura
 
@@ -119,63 +157,68 @@ duas, cada metade seguindo um grupo; ao se reaproximarem, volta a ser única.
 src/
   main.ts                  Bootstrap (engine, loading, GameManager)
   systems/
-    GameManager.ts         Máquina de estados + loop de render
+    GameManager.ts         Máquina de estados + loop de render + pausa
     InputManager.ts        Teclado + Gamepad API (edges, deadzone, detecção)
     PhysicsSystem.ts       Inicialização do Havok (WASM)
-    CameraSystem.ts        Câmera isométrica que segue o centroide dos pets
+    CameraSystem.ts        Câmera isométrica que segue o centroide + split-view
+    AudioManager.ts        SFX e trilhas procedurais (Web Audio API)
   entities/
-    Player.ts              Classe base (placeholder primitivo + física + habilidade)
+    Player.ts              Classe base (visual + física + habilidade)
+    PetModel.ts            Modelo procedural chibi por personagem
     Sirius/Belatriz/Minerva/Zoe.ts   Habilidades específicas
     createPlayer.ts        Fábrica por personagem
-    Mailman.ts             Carteiro (spawner atordoável)
+    Mailman / Bird / Invader / Motorcycle / GiantPuff   Inimigos e obstáculos
   objects/
-    Letter.ts              Carta com física (free → carried → destroyed)
+    Letter / Cushion / Food / Nest   Objetos interativos com física
   scenes/
-    MenuScene / PlayerCountScene / CharSelectScene / Phase1Scene / ResultScene
-    menuHelpers.ts         Fundo animado + lista de menu navegável
+    MenuScene / PlayerCountScene / CharSelectScene / PhaseSelectScene
+    Phase1..Phase8Scene / ResultScene
+    SceneController.ts     Contrato comum de cena
+    menuHelpers.ts         Fundo animado (pets procedurais) + lista de menu
   ui/
-    HUD.ts                 Timer, objetivo, cooldowns, barra de caos, textos flutuantes
+    HUD.ts                 Timer, objetivo, cooldowns, caos, radar, textos flutuantes
+    PauseMenu.ts           Overlay de pausa (reusa a MenuList)
   utils/
-    Constants / CharacterData / GameConfig / Visual
+    Constants / CharacterData / GameConfig / Progress / AssetLoader / Visual
 ```
 
 ### Decisões de implementação
 
-- **Modelos GLB com fallback**: o `Player` separa collider (cápsula física invisível)
-  de visual (`visualRoot`). No início, mostra um **placeholder primitivo**; em paralelo,
-  `loadModel()` tenta carregar o `.glb` do personagem e, se existir, o substitui
-  (auto-escala + animações `idle`/`walk` do Mixamo + sombras). Se o arquivo não existir,
-  segue com o placeholder — nada quebra. Toda a lógica de gameplay é indiferente a qual
-  visual está em uso.
-- **Toon shading** via `StandardMaterial` (cor chapada + emissive) e `renderOutline`
-  nativo do Babylon, evitando dependências extras.
-- **Câmera**: isométrica fixa seguindo o centroide, com zoom-out conforme os pets se
+- **Pausa real, centralizada no `GameManager`**: Esc/Start alterna a pausa; enquanto
+  aberta, a física (`setTimeStep(0)`) e as animações da cena são congeladas e o loop
+  de gameplay é pulado. O `PauseMenu` reusa a `MenuList` e renderiza só pela câmera
+  de UI (não duplica no split-view).
+- **Câmera**: isométrica seguindo o centroide, com zoom-out conforme os pets se
   afastam. **Split-view automático**: quando os pets se separam (espalhamento > 11
-  unidades, com histerese para voltar < 8) a tela divide em duas viewports, cada
-  uma seguindo um grupo de pets próximos (clusterização pelo par mais distante).
-  Uma câmera de UI dedicada (via `layerMask`) garante que o HUD renderize uma única
-  vez em tela cheia, sem duplicar nas viewports.
+  unidades, com histerese para voltar < 8) a tela divide em duas viewports, cada uma
+  seguindo um grupo (clusterização pelo par mais distante). Uma câmera de UI dedicada
+  (via `layerMask`) garante o HUD renderizado uma única vez em tela cheia.
+- **Áudio e modelos procedurais** evitam dependências de assets externos (ver seções
+  acima).
 
-## 🗺️ Próximos passos (roadmap do GDD)
+## 🗺️ Roadmap
 
-- [x] Pipeline de carregamento de **modelos GLB** com fallback automático para placeholders
-      (`src/utils/AssetLoader.ts`). Basta dropar os `.glb` em `public/assets/models/characters/`
-      — ver `public/assets/README.md` para nomes e como gerar a partir das fotos.
-- [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender → Mixamo)
-      — referências e prompts prontos em `public/assets/models/characters/*.reference.md`.
-- [x] Split-view automático no `CameraSystem` quando os pets se separam.
-- [x] **Fase 2 "Os Pássaros Abusados"** (ninhos em 3 estágios, gating de gatos, urubu).
-- [x] **Fase 3 "A Rebelião das Almofadas"** (rigidbodies, vento, puff que persegue, camera shake).
-- [x] **Fase 4 "O Roubo Épico da Cozinha"** (cascata física, preview vermelho, boost co-op).
-- [x] **Fase 5 "O Vizinho Invasor"** (invasores com IA, galinha caótica, boss Gato Gigante).
-- [x] **Fase 6 "A Moto do Terror"** (janelas, barra de barulho, carreata final em V).
-- [x] **Fase 7 "Caos Total"** (mashup de sistemas, medidor de caos, radar, sprint final).
-- [x] **Fase 8 "Operação Perdão"** (ações fofas por dono, SUPER FOFO, confetes).
-- [x] **Campanha completa: tutorial-base + 8 fases encadeadas.**
-- [ ] Polish da Fase 2: navegação vertical real para ninhos altos (subir no arbusto),
-      câmera dramática na entrada do urubu, pathfinding de voo mais orgânico.
-- [ ] `DestructionTracker` persistido em `localStorage` para alimentar a Fase 8.
-- [ ] Áudio (latido, miado, SFX) e cutscenes (`CinematicScene`).
+Feito:
+
+- [x] **Campanha completa**: 8 fases encadeadas (Menu → seleção → fases → final).
+- [x] Pipeline de **modelos GLB** com fallback automático (`AssetLoader`).
+- [x] **Pets procedurais** (`PetModel`) em jogo e nos menus.
+- [x] **Split-view automático** no `CameraSystem`.
+- [x] **Áudio procedural** (SFX + 2 trilhas, mudo no M).
+- [x] **Pausa real** (Retomar / Reiniciar / Menu), congelando física e lógica.
+- [x] **Progressão salva** em `localStorage` (estrelas + seleção/desbloqueio de fases).
+
+Pendente / a aprimorar:
+
+- [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender →
+      Mixamo) — referências e prompts em `public/assets/models/characters/*.reference.md`.
+- [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
+- [ ] Polish da Fase 2: navegação vertical real para ninhos altos, câmera dramática
+      na entrada do urubu, voo mais orgânico.
+- [ ] Opções de **volume** (hoje só mudo), **passos/ambiente** e *ducking* da música.
+- [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
+      shake/flash, daltonismo).
+- [ ] **Testes** automatizados, **lint/format** e *code-splitting* do bundle.
 
 ## 🚀 Deploy
 
