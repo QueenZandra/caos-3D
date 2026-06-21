@@ -8,6 +8,7 @@ import type { GameManager } from "../systems/GameManager";
 import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
 import { Audio } from "../systems/AudioManager";
+import { Progress } from "../utils/Progress";
 import { createMenuScene, addTitle } from "./menuHelpers";
 
 type RowKind = "volume" | "toggle" | "action";
@@ -34,6 +35,8 @@ export class OptionsScene implements SceneController {
   private ui: AdvancedDynamicTexture;
   private rows: OptRow[] = [];
   private cursor = 0;
+  private resetRow?: OptRow;
+  private confirmingReset = false;
 
   constructor(private game: GameManager) {
     const { scene } = createMenuScene(game.engine);
@@ -50,8 +53,13 @@ export class OptionsScene implements SceneController {
         toggle: () => Audio.toggleMute(),
         state: () => (Audio.isMuted ? "Sim" : "Não"),
       }),
+      this.makeRow("🗑️  Zerar progresso", "action", {}),
       this.makeRow("⬅️  Voltar", "action", { action: () => this.game.goTo(GameState.Menu) }),
     ];
+
+    // a linha de reset gerencia seu próprio texto (confirmação em 2 passos)
+    this.resetRow = this.rows[4];
+    this.resetRow.action = () => this.handleReset();
 
     this.rows.forEach((r, i) => {
       r.container.top = `${(i - (this.rows.length - 1) / 2) * 70 + 10}px`;
@@ -131,6 +139,8 @@ export class OptionsScene implements SceneController {
         r.fill.width = `${Math.max(1, Math.round(v * BAR_W))}px`;
       } else if (r.kind === "toggle" && r.state) {
         r.value.text = r.state();
+      } else if (r === this.resetRow) {
+        // texto gerenciado por handleReset (não sobrescreve)
       } else {
         r.value.text = "";
       }
@@ -138,10 +148,35 @@ export class OptionsScene implements SceneController {
   }
 
   private moveCursor(dir: number): void {
+    this.cancelReset();
     const n = this.rows.length;
     this.cursor = (this.cursor + dir + n) % n;
     Audio.sfx("uiMove");
     this.refresh();
+  }
+
+  /** Cancela a confirmação de reset se o usuário sair da linha. */
+  private cancelReset(): void {
+    if (this.confirmingReset && this.resetRow) {
+      this.confirmingReset = false;
+      this.resetRow.value.text = "";
+    }
+  }
+
+  private handleReset(): void {
+    if (!this.resetRow) return;
+    if (!this.confirmingReset) {
+      this.confirmingReset = true;
+      this.resetRow.value.text = "Confirmar?";
+      this.resetRow.value.color = "#FF6B6B";
+      Audio.sfx("uiBack");
+    } else {
+      Progress.reset();
+      this.confirmingReset = false;
+      this.resetRow.value.text = "Zerado! ✓";
+      this.resetRow.value.color = PALETTE.teal;
+      Audio.sfx("uiConfirm");
+    }
   }
 
   private adjust(dir: number): void {
@@ -160,7 +195,7 @@ export class OptionsScene implements SceneController {
       Audio.sfx("uiConfirm");
       this.refresh();
     } else if (r.kind === "action" && r.action) {
-      Audio.sfx("uiConfirm");
+      if (r !== this.resetRow) Audio.sfx("uiConfirm"); // reset gerencia seu som
       r.action();
     }
   }
