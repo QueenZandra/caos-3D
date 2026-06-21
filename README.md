@@ -135,6 +135,9 @@ Tudo é **sintetizado em runtime** com a **Web Audio API** (`src/systems/AudioMa
   de UI e fanfarra de vitória / som de derrota.
 - **Duas trilhas em loop** (menu calmo, gameplay animado) com *scheduler* lookahead
   pelo relógio do `AudioContext`.
+- **Ambiência por fase**: um *drone* contínuo + eventos aleatórios (pássaros na F2,
+  buzinas na F6, talheres na F4, galinha na F5, brisa, carrilhão…), num bus próprio.
+- **Ducking**: a música abaixa sob as fanfarras de vitória/derrota e volta sozinha.
 - Destrava no 1º gesto do usuário (exigência dos navegadores); **M** alterna o mudo.
 - **⚙️ Opções** (no menu): volumes de **geral / música / efeitos** e mudo,
   ajustáveis com ← →, tudo persistido em `localStorage`.
@@ -210,6 +213,7 @@ Feito:
 - [x] **Progressão salva** em `localStorage` (estrelas + seleção/desbloqueio de fases).
 - [x] **Opções de volume** (geral/música/efeitos + mudo), persistidas.
 - [x] **Passos** dos pets (ritmo conforme a velocidade) e **ducking** da música nas fanfarras.
+- [x] **Ambiente sonoro por fase** (pássaros, rua, cozinha, brisa, galinha…).
 
 Pendente / a aprimorar:
 
@@ -218,7 +222,6 @@ Pendente / a aprimorar:
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
 - [ ] Polish da Fase 2: navegação vertical real para ninhos altos, câmera dramática
       na entrada do urubu, voo mais orgânico.
-- [ ] **Ambiente** sonoro por fase (pássaros, rua, cozinha…).
 - [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
       shake/flash, daltonismo).
 - [ ] **Testes** automatizados, **lint/format** e *code-splitting* do bundle.

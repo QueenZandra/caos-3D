@@ -26,6 +26,29 @@ export type SfxName =
 
 export type MusicTrack = "menu" | "gameplay";
 
+/** Ambiência por fase (drone contínuo + eventos aleatórios). */
+export type AmbientName =
+  | "house"
+  | "birds"
+  | "living"
+  | "kitchen"
+  | "yard"
+  | "street"
+  | "chaos"
+  | "calm";
+
+/** Mapa fase (1..8) → ambiência. */
+const AMBIENCE_BY_PHASE: AmbientName[] = [
+  "house", // 1 carteiro
+  "birds", // 2 pássaros
+  "living", // 3 almofadas
+  "kitchen", // 4 cozinha
+  "yard", // 5 vizinho
+  "street", // 6 moto
+  "chaos", // 7 caos total
+  "calm", // 8 perdão
+];
+
 interface Note {
   /** início (s) dentro do loop */
   t: number;
@@ -99,7 +122,15 @@ class AudioManager {
   private master: GainNode | null = null;
   private musicGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
+  private ambientGain: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+
+  // ambiência
+  private currentAmbient: AmbientName | null = null;
+  private ambientNodes: Array<{ stop: () => void }> = [];
+  private ambientTimer: number | null = null;
+  private ambienceEvent: (() => void) | null = null;
+  private ambienceEvery: [number, number] = [3, 7];
 
   private muted = false;
   private masterVolume = DEFAULTS.master;
@@ -183,6 +214,11 @@ class AudioManager {
     this.sfxGain.gain.value = this.sfxVolume;
     this.sfxGain.connect(this.master);
 
+    // ambiência: bus próprio em nível modesto (afetado por master + mudo)
+    this.ambientGain = ctx.createGain();
+    this.ambientGain.gain.value = 0.3;
+    this.ambientGain.connect(this.master);
+
     // buffer de ruído branco reutilizável (whoosh / susto / quebra)
     const len = ctx.sampleRate * 1;
     const buf = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -256,6 +292,153 @@ class AudioManager {
     g.linearRampToValueAtTime(full, now + seconds);
   }
 
+  // ─── Ambiência ─────────────────────────────────────────────────────────────
+  /** Define a ambiência da fase (1..8). */
+  ambientForPhase(phase: number): void {
+    this.ambient(AMBIENCE_BY_PHASE[phase - 1] ?? "house");
+  }
+
+  /** Troca a ambiência em loop (no-op se já for a atual; null = silêncio). */
+  ambient(name: AmbientName | null): void {
+    if (this.currentAmbient === name) return;
+    this.currentAmbient = name;
+    this.stopAmbient();
+    if (!name) return;
+    const ctx = this.ensure();
+    if (ctx.state === "suspended") void ctx.resume();
+    this.buildAmbience(name);
+    if (this.ambienceEvent) this.scheduleAmbientEvent();
+  }
+
+  private stopAmbient(): void {
+    if (this.ambientTimer !== null) {
+      clearTimeout(this.ambientTimer);
+      this.ambientTimer = null;
+    }
+    for (const n of this.ambientNodes) n.stop();
+    this.ambientNodes = [];
+    this.ambienceEvent = null;
+  }
+
+  /** Oscilador contínuo (drone) roteado pelo bus de ambiência. */
+  private addDrone(freq: number, type: OscillatorType, gain: number): void {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.value = gain;
+    osc.connect(g);
+    g.connect(this.ambientGain!);
+    osc.start();
+    this.ambientNodes.push({
+      stop: () => {
+        try {
+          osc.stop();
+        } catch {
+          /* já parado */
+        }
+        osc.disconnect();
+        g.disconnect();
+      },
+    });
+  }
+
+  /** Ruído filtrado contínuo (brisa / tráfego). */
+  private addNoiseDrone(filterHz: number, gain: number): void {
+    const ctx = this.ctx!;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noiseBuffer;
+    src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = filterHz;
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(this.ambientGain!);
+    src.start();
+    this.ambientNodes.push({
+      stop: () => {
+        try {
+          src.stop();
+        } catch {
+          /* já parado */
+        }
+        src.disconnect();
+        filter.disconnect();
+        g.disconnect();
+      },
+    });
+  }
+
+  private scheduleAmbientEvent(): void {
+    const [lo, hi] = this.ambienceEvery;
+    const delay = (lo + Math.random() * (hi - lo)) * 1000;
+    this.ambientTimer = window.setTimeout(() => {
+      this.ambienceEvent?.();
+      this.scheduleAmbientEvent();
+    }, delay);
+  }
+
+  /** Monta drones + evento aleatório de cada ambiência. */
+  private buildAmbience(name: AmbientName): void {
+    const amb = this.ambientGain!;
+    const now = () => this.ctx!.currentTime;
+    switch (name) {
+      case "house":
+        this.addDrone(70, "sine", 0.05); // tom de casa
+        break;
+      case "birds":
+        this.addNoiseDrone(900, 0.015);
+        this.ambienceEvery = [1.4, 3.8];
+        this.ambienceEvent = () => {
+          const t = now();
+          this.blip(2300 + Math.random() * 700, 0.06, "sine", 0.18, t, 400, amb);
+          this.blip(2700, 0.05, "sine", 0.13, t + 0.07, -300, amb);
+        };
+        break;
+      case "living":
+        this.addDrone(60, "sine", 0.05);
+        this.ambienceEvery = [5, 10];
+        this.ambienceEvent = () => this.noise(0.8, 0.1, 480, now(), 280, amb); // brisa
+        break;
+      case "kitchen":
+        this.addDrone(80, "sine", 0.04); // zumbido de geladeira
+        this.ambienceEvery = [2.2, 5];
+        this.ambienceEvent = () => this.blip(1700 + Math.random() * 900, 0.09, "triangle", 0.13, now(), -200, amb); // talher
+        break;
+      case "yard":
+        this.addNoiseDrone(600, 0.018);
+        this.ambienceEvery = [3, 7];
+        this.ambienceEvent = () => {
+          const t = now();
+          this.blip(430, 0.07, "square", 0.14, t, 120, amb); // galinha
+          this.blip(360, 0.08, "square", 0.12, t + 0.09, -80, amb);
+        };
+        break;
+      case "street":
+        this.addNoiseDrone(380, 0.045); // tráfego distante
+        this.addDrone(55, "sawtooth", 0.025);
+        this.ambienceEvery = [2.5, 6];
+        this.ambienceEvent = () => this.blip(180, 0.25, "sawtooth", 0.14, now(), 20, amb); // buzina
+        break;
+      case "chaos":
+        this.addDrone(50, "sawtooth", 0.05);
+        this.addDrone(75.5, "square", 0.03); // batimento tenso
+        this.ambienceEvery = [1, 2.6];
+        this.ambienceEvent = () => this.blip(120 + Math.random() * 220, 0.2, "sawtooth", 0.12, now(), -40, amb);
+        break;
+      case "calm":
+        this.addDrone(midi(48), "sine", 0.05);
+        this.addDrone(midi(55), "sine", 0.03); // pad quente
+        this.ambienceEvery = [3, 6];
+        this.ambienceEvent = () => this.blip(midi(72), 0.5, "sine", 0.1, now(), 0, amb); // carrilhão
+        break;
+    }
+  }
+
   // ─── SFX ───────────────────────────────────────────────────────────────
   /** Oscilador único com envelope ADSR curto. */
   private blip(
@@ -283,7 +466,14 @@ class AudioManager {
   }
 
   /** Rajada de ruído filtrado (whoosh / susto / quebra). */
-  private noise(dur: number, gain: number, filterHz: number, when: number, sweep = 0): void {
+  private noise(
+    dur: number,
+    gain: number,
+    filterHz: number,
+    when: number,
+    sweep = 0,
+    dest: GainNode | null = null,
+  ): void {
     const ctx = this.ctx!;
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
@@ -296,7 +486,7 @@ class AudioManager {
     g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
     src.connect(filter);
     filter.connect(g);
-    g.connect(this.sfxGain!);
+    g.connect(dest ?? this.sfxGain!);
     src.start(when);
     src.stop(when + dur);
   }

@@ -136,6 +136,9 @@ export class GameManager {
     // trilha conforme o contexto: fases = gameplay; menus/resultado = calmo
     const inPhase = state.startsWith("phase");
     Audio.music(inPhase ? "gameplay" : "menu");
+    // ambiência específica da fase (pássaros, rua, cozinha…); silêncio nos menus
+    if (inPhase) Audio.ambientForPhase(Number(state.slice(5)));
+    else Audio.ambient(null);
   }
 
   private build(state: GameState): SceneController {
