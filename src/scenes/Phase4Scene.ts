@@ -93,6 +93,7 @@ export class Phase4Scene implements SceneController {
     this.spawnPlayers();
     this.spawnFoods();
     this.hud = new HUD(this.scene, this.players);
+    this.hud.setObjective(PLATE); // seta aponta o prato
   }
 
   // ─── Cenário ────────────────────────────────────────────────

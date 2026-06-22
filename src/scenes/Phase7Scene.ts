@@ -98,6 +98,7 @@ export class Phase7Scene implements SceneController {
     this.shadows.addShadowCaster(this.puff.mesh);
 
     this.hud = new HUD(this.scene, this.players);
+    this.hud.setObjective(BIN); // seta aponta a lixeira
   }
 
   // ─── Cenário ────────────────────────────────────────────────

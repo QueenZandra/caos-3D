@@ -111,6 +111,7 @@ export class Phase1Scene implements SceneController {
 
     // HUD precisa dos players prontos
     this.hud = new HUD(this.scene, this.players);
+    this.hud.setObjective(BIN_POS); // seta aponta a lixeira
   }
 
   // ─── Construção do cenário ──────────────────────────────────

@@ -223,6 +223,7 @@ Feito:
 - [x] **Passos** dos pets (ritmo conforme a velocidade) e **ducking** da música nas fanfarras.
 - [x] **Ambiente sonoro por fase** (pássaros, rua, cozinha, brisa, galinha…).
 - [x] **Higiene técnica**: testes (Vitest), ESLint/Prettier e *code-splitting* (Babylon/GUI/jogo).
+- [x] **Juice**: fade entre cenas, partículas (pegar/entregar/quebrar) e seta de objetivo fora-de-tela.
 
 Pendente / a aprimorar:
 

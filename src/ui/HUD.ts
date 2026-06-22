@@ -5,10 +5,10 @@ import { Control } from "@babylonjs/gui/2D/controls/control";
 import { StackPanel } from "@babylonjs/gui/2D/controls/stackPanel";
 import { Ellipse } from "@babylonjs/gui/2D/controls/ellipse";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Player } from "../entities/Player";
-import { UI_LAYER } from "../utils/Constants";
+import { UI_LAYER, PALETTE } from "../utils/Constants";
 
 interface FloatText {
   text: TextBlock;
@@ -28,6 +28,8 @@ export class HUD {
   private radarPanel?: Rectangle;
   private radarDots: Ellipse[] = [];
   private dangerOverlay?: Rectangle;
+  private objectiveArrow: TextBlock;
+  private objectiveTarget: Vector3 | null = null;
 
   constructor(
     private scene: Scene,
@@ -119,6 +121,71 @@ export class HUD {
     this.ui.addControl(panel);
 
     players.forEach((p) => panel.addControl(this.buildCard(p)));
+
+    // seta que aponta o objetivo quando ele está fora da tela
+    this.objectiveArrow = new TextBlock();
+    this.objectiveArrow.text = "➤";
+    this.objectiveArrow.color = PALETTE.teal;
+    this.objectiveArrow.fontSize = 46;
+    this.objectiveArrow.outlineColor = "#1A1A2E";
+    this.objectiveArrow.outlineWidth = 6;
+    this.objectiveArrow.isVisible = false;
+    this.objectiveArrow.zIndex = 5;
+    this.ui.addControl(this.objectiveArrow);
+  }
+
+  /** Define a posição-alvo (mundo) que a seta aponta; null desliga a seta. */
+  setObjective(target: Vector3 | null): void {
+    this.objectiveTarget = target ? target.clone() : null;
+    if (!target) this.objectiveArrow.isVisible = false;
+  }
+
+  /** Projeta o alvo na tela; se estiver fora, mostra a seta na borda apontando-o. */
+  private updateObjectiveArrow(): void {
+    const cam = this.scene.activeCamera;
+    if (!this.objectiveTarget || !cam) {
+      this.objectiveArrow.isVisible = false;
+      return;
+    }
+    const engine = this.scene.getEngine();
+    const w = engine.getRenderWidth();
+    const h = engine.getRenderHeight();
+    const vp = cam.viewport.toGlobal(w, h);
+    const proj = Vector3.Project(
+      this.objectiveTarget,
+      Matrix.Identity(),
+      this.scene.getTransformMatrix(),
+      vp,
+    );
+    const cx = w / 2;
+    const cy = h / 2;
+    const margin = 64;
+    const behind = proj.z < 0 || proj.z > 1;
+    let dx = proj.x - cx;
+    let dy = proj.y - cy;
+    if (behind) {
+      dx = -dx;
+      dy = -dy;
+    }
+    const onScreen =
+      !behind &&
+      proj.x >= margin &&
+      proj.x <= w - margin &&
+      proj.y >= margin &&
+      proj.y <= h - margin;
+    if (onScreen) {
+      this.objectiveArrow.isVisible = false;
+      return;
+    }
+    if (dx === 0 && dy === 0) dy = 1;
+    // projeta (dx,dy) na borda do retângulo seguro (meia-extensão menos a margem)
+    const hx = Math.max(1, cx - margin);
+    const hy = Math.max(1, cy - margin);
+    const scale = 1 / Math.max(Math.abs(dx) / hx, Math.abs(dy) / hy);
+    this.objectiveArrow.isVisible = true;
+    this.objectiveArrow.left = `${dx * scale}px`;
+    this.objectiveArrow.top = `${dy * scale}px`;
+    this.objectiveArrow.rotation = Math.atan2(dy, dx); // "➤" aponta para +x em rotação 0
   }
 
   private buildCard(p: Player): Rectangle {
@@ -193,6 +260,8 @@ export class HUD {
     if (this.dangerOverlay?.isVisible) {
       this.dangerOverlay.alpha = 0.12 + 0.14 * (Math.sin(performance.now() * 0.008) + 1) * 0.5;
     }
+
+    this.updateObjectiveArrow();
 
     opts.players.forEach((p, i) => {
       const card = this.playerCards[i];
