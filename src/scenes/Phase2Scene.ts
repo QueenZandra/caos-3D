@@ -26,6 +26,7 @@ import { Bird } from "../entities/Bird";
 import { Nest } from "../objects/Nest";
 import { HUD } from "../ui/HUD";
 import { PALETTE } from "../utils/Constants";
+import { burst } from "../utils/Particles";
 
 const ARENA = 28;
 const HALF = ARENA / 2;
@@ -249,7 +250,7 @@ export class Phase2Scene implements SceneController {
     for (let i = this.birds.length - 1; i >= 0; i--) {
       const b = this.birds[i];
       const nest = this.nests[b.nestIndex];
-      b.bob();
+      b.animate(b.state !== "perched");
 
       switch (b.state) {
         case "flying": {
@@ -263,6 +264,7 @@ export class Phase2Scene implements SceneController {
         }
         case "perched": {
           b.mesh.position.copyFrom(nest.perch);
+          b.mesh.position.y += Math.sin(performance.now() * 0.004) * 0.07; // flutua
           const res = nest.build(dt, this.buildRate);
           if (res === "permanent") {
             this.permanent++;
@@ -338,9 +340,12 @@ export class Phase2Scene implements SceneController {
       return;
     }
     const idx = this.nests.indexOf(best);
+    // gato dá um pulinho ao alcançar ninho alto (leitura de verticalidade)
+    if (best.requiresCat) player.boost(0.45);
     best.reset();
     this.destroyed++;
     Audio.sfx("deliver");
+    burst(this.scene, best.position, PALETTE.teal, { count: 8, size: 0.14 });
     this.hud.floatingText(player.position, "-1 🪺", PALETTE.teal);
     const bird = this.birds.find((b) => b.nestIndex === idx && b.state !== "leaving");
     if (bird) bird.state = "leaving";
@@ -368,6 +373,11 @@ export class Phase2Scene implements SceneController {
     beak.position = new Vector3(0, 0.2, 1.7);
     this.shadows.addShadowCaster(v);
     this.vulture = v;
+    // entrada dramática: punch-in no urubu + tremor + poeira
+    this.cam.focus(v.position, 1.5);
+    this.cam.shake(1.3, 0.7);
+    burst(this.scene, v.position, "#2A2A35", { count: 16, size: 0.22, speed: 5 });
+    Audio.sfx("stun");
     this.hud.floatingText(v.position, "URUBU! 2 pets p/ expulsar!", PALETTE.pink);
   }
 

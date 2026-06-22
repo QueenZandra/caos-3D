@@ -33,6 +33,11 @@ export class CameraSystem {
   private shakeT = 0;
   private shakeDur = 0;
   private shakeMag = 0;
+  // foco dramático temporário (ex.: entrada do urubu)
+  private focusT = 0;
+  private focusDur = 0;
+  private focusPoint = Vector3.Zero();
+  private focusRadius: number = CAMERA.radius;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -98,6 +103,7 @@ export class CameraSystem {
       this.follow(this.camB, groupB, dt);
     }
 
+    this.applyFocus(dt);
     this.applyShake(dt);
   }
 
@@ -106,6 +112,26 @@ export class CameraSystem {
     this.shakeMag = Math.max(this.shakeMag, magnitude);
     this.shakeDur = duration;
     this.shakeT = duration;
+  }
+
+  /**
+   * Foco dramático momentâneo num ponto: aproxima e mira o alvo, depois volta
+   * suavemente ao enquadramento normal (entra e sai com curva senoidal).
+   */
+  focus(point: Vector3, seconds: number, radius = CAMERA.radius * 0.6): void {
+    this.focusPoint.copyFrom(point);
+    this.focusDur = seconds;
+    this.focusT = seconds;
+    this.focusRadius = radius;
+  }
+
+  private applyFocus(dt: number): void {
+    if (this.focusT <= 0) return;
+    this.focusT -= dt;
+    const phase = 1 - Math.max(0, this.focusT) / this.focusDur; // 0 → 1
+    const w = Math.sin(Math.PI * phase) * 0.85; // 0 → 1 → 0
+    this.camera.setTarget(Vector3.Lerp(this.camera.getTarget(), this.focusPoint, w));
+    this.camera.radius = Scalar.Lerp(this.camera.radius, this.focusRadius, w);
   }
 
   private applyShake(dt: number): void {
