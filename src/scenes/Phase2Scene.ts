@@ -75,6 +75,8 @@ export class Phase2Scene implements SceneController {
   private players: Player[] = [];
   private nests: Nest[] = [];
   private birds: Bird[] = [];
+  /** escaladas em andamento (gato subindo arbusto até um ninho alto) */
+  private climbs: { player: Player; nest: Nest }[] = [];
 
   private goal: number;
   private destroyed = 0;
@@ -316,6 +318,7 @@ export class Phase2Scene implements SceneController {
 
   // ─── Destruição de ninhos pelos pets ────────────────────────
   private tryDestroy(player: Player): void {
+    if (player.isClimbing) return;
     let best: Nest | null = null;
     let bestDist = DESTROY_H;
     for (const n of this.nests) {
@@ -339,16 +342,42 @@ export class Phase2Scene implements SceneController {
       if (highNear) this.hud.floatingText(player.position, "🐱 só gatos!", PALETTE.purple);
       return;
     }
-    const idx = this.nests.indexOf(best);
-    // gato dá um pulinho ao alcançar ninho alto (leitura de verticalidade)
-    if (best.requiresCat) player.boost(0.45);
-    best.reset();
+    // ninho alto: o gato ESCALA o arbusto e só destrói ao chegar no topo
+    if (best.requiresCat) {
+      player.beginClimb(best.position.x, best.position.z, best.position.y + 0.1);
+      this.climbs.push({ player, nest: best });
+      this.hud.floatingText(player.position, "🧗 subindo…", PALETTE.purple);
+      return;
+    }
+    this.destroyNest(best);
+  }
+
+  /** Aplica a destruição de um ninho (efeitos + faz o pássaro abandonar). */
+  private destroyNest(nest: Nest): void {
+    const idx = this.nests.indexOf(nest);
+    nest.reset();
     this.destroyed++;
     Audio.sfx("deliver");
-    burst(this.scene, best.position, PALETTE.teal, { count: 8, size: 0.14 });
-    this.hud.floatingText(player.position, "-1 🪺", PALETTE.teal);
+    burst(this.scene, nest.position, PALETTE.teal, { count: 8, size: 0.14 });
+    this.hud.floatingText(nest.position, "-1 🪺", PALETTE.teal);
     const bird = this.birds.find((b) => b.nestIndex === idx && b.state !== "leaving");
     if (bird) bird.state = "leaving";
+  }
+
+  /** Conclui as escaladas em andamento: ao chegar no topo, destrói o ninho. */
+  private updateClimbs(): void {
+    for (let i = this.climbs.length - 1; i >= 0; i--) {
+      const { player, nest } = this.climbs[i];
+      if (!player.isClimbing) {
+        this.climbs.splice(i, 1);
+        continue;
+      }
+      if (player.climbReachedTop) {
+        if (nest.state === "building") this.destroyNest(nest);
+        player.endClimb();
+        this.climbs.splice(i, 1);
+      }
+    }
   }
 
   // ─── Urubu (twist cooperativo) ──────────────────────────────
@@ -423,6 +452,7 @@ export class Phase2Scene implements SceneController {
       if (input.interact) this.tryDestroy(p);
     });
 
+    this.updateClimbs();
     this.updateBirds(dt);
     this.updateVulture(dt);
 

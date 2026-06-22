@@ -226,14 +226,14 @@ Feito:
 - [x] **Juice**: fade entre cenas, partículas (pegar/entregar/quebrar) e seta de objetivo fora-de-tela.
 - [x] **Polish da Fase 2** (voo orgânico dos pássaros, entrada dramática do urubu) e **vida nos pets**
       (balanço idle/andar, "pop" + partículas na habilidade, estrelinhas no atordoamento, estrelas animadas no resultado).
+- [x] **Sistema de escalada** (Fase 2): gatos sobem os arbustos altos (movimento
+      cinemático pela lateral) para alcançar e destruir os ninhos no topo.
 
 Pendente / a aprimorar:
 
 - [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender →
       Mixamo) — referências e prompts em `public/assets/models/characters/*.reference.md`.
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
-- [ ] Polish da Fase 2: navegação vertical real para ninhos altos, câmera dramática
-      na entrada do urubu, voo mais orgânico.
 - [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
       shake/flash, daltonismo).
 - [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).

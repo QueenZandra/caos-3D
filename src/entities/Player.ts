@@ -5,7 +5,10 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { PhysicsAggregate } from "@babylonjs/core/Physics/v2/physicsAggregate";
-import { PhysicsShapeType } from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
+import {
+  PhysicsShapeType,
+  PhysicsMotionType,
+} from "@babylonjs/core/Physics/v2/IPhysicsEnginePlugin";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import type { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import type { AnimationGroup } from "@babylonjs/core/Animations/animationGroup";
@@ -78,6 +81,14 @@ export class Player {
   private animTime = Math.random() * 10;
   /** tempo restante do "pop" de habilidade */
   private popT = 0;
+
+  // escalada (Fase 2: gatos sobem arbustos altos para alcançar ninhos)
+  private climbing = false;
+  private climbTopY = 0;
+  private climbAnchor = new Vector3();
+  /** posição-alvo na lateral do arbusto (encosto) */
+  private climbSide = new Vector3();
+  private climbTime = 0;
 
   constructor(
     scene: Scene,
@@ -201,6 +212,67 @@ export class Player {
     this.aggregate.body.setLinearVelocity(new Vector3(v.x, 5, v.z));
   }
 
+  get isClimbing(): boolean {
+    return this.climbing;
+  }
+
+  /** Já chegou ao topo da escalada? */
+  get climbReachedTop(): boolean {
+    return this.climbing && this.body.position.y >= this.climbTopY - 0.2;
+  }
+
+  /**
+   * Inicia a escalada de um arbusto: o corpo vira cinemático (ANIMATED) e sobe
+   * pela lateral até `topY`, sem brigar com a colisão do arbusto. O chamador
+   * (fase) detecta climbReachedTop para concluir a ação e chama endClimb().
+   */
+  beginClimb(anchorX: number, anchorZ: number, topY: number): void {
+    if (this.climbing) return;
+    this.climbing = true;
+    this.climbTime = 0;
+    this.climbTopY = topY;
+    this.climbAnchor.set(anchorX, 0, anchorZ);
+    // encosto na lateral de onde o pet veio (raio do arbusto + do pet)
+    const out = new Vector3(this.body.position.x - anchorX, 0, this.body.position.z - anchorZ);
+    if (out.lengthSquared() < 0.0001) out.set(0, 0, 1);
+    out.normalize().scaleInPlace(1.25);
+    this.climbSide.set(anchorX + out.x, 0, anchorZ + out.z);
+    this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    Audio.sfx("step");
+  }
+
+  endClimb(): void {
+    if (!this.climbing) return;
+    this.climbing = false;
+    this.aggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+    // saltinho para fora/baixo ao terminar
+    const out = this.body.position.subtract(this.climbAnchor);
+    out.y = 0;
+    if (out.lengthSquared() < 0.0001) out.set(0, 0, 1);
+    out.normalize();
+    this.aggregate.body.setLinearVelocity(new Vector3(out.x * 3, 1.5, out.z * 3));
+  }
+
+  private updateClimb(dt: number): void {
+    this.climbTime += dt;
+    const pos = this.body.position;
+    // aproxima da lateral (xz) e sobe (y) de forma cinemática
+    const nx = pos.x + (this.climbSide.x - pos.x) * Math.min(1, dt * 8);
+    const nz = pos.z + (this.climbSide.z - pos.z) * Math.min(1, dt * 8);
+    const ny = Math.min(this.climbTopY, pos.y + dt * 3.2);
+    this.body.position.set(nx, ny, nz);
+
+    // vira de frente para o arbusto + balanço de "agarrão"
+    this.facing.set(this.climbAnchor.x - nx, 0, this.climbAnchor.z - nz);
+    if (this.facing.lengthSquared() > 0.0001) this.facing.normalize();
+    this.visualRoot.position.copyFrom(pos);
+    this.visualRoot.rotation.y = Math.atan2(this.facing.x, this.facing.z);
+    const wiggle = 1 + Math.sin(this.climbTime * 18) * 0.04;
+    this.visualRoot.scaling.set(1, wiggle, 1);
+
+    if (this.climbTime > 3) this.endClimb(); // segurança
+  }
+
   /** Transparência visual (usado pela Furtividade da Zoe). */
   setVisualAlpha(alpha: number): void {
     for (const p of this.placeholderParts) p.visibility = alpha;
@@ -214,6 +286,12 @@ export class Player {
     if (this.abilityActiveFor > 0) {
       this.abilityActiveFor -= dt;
       if (this.abilityActiveFor <= 0) this.onAbilityEnd();
+    }
+
+    // escalando: movimento cinemático dedicado (ignora input/gravidade)
+    if (this.climbing) {
+      this.updateClimb(dt);
+      return;
     }
 
     let moving = false;
