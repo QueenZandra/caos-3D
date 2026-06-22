@@ -224,6 +224,8 @@ Feito:
 - [x] **Ambiente sonoro por fase** (pássaros, rua, cozinha, brisa, galinha…).
 - [x] **Higiene técnica**: testes (Vitest), ESLint/Prettier e *code-splitting* (Babylon/GUI/jogo).
 - [x] **Juice**: fade entre cenas, partículas (pegar/entregar/quebrar) e seta de objetivo fora-de-tela.
+- [x] **Polish da Fase 2** (voo orgânico dos pássaros, entrada dramática do urubu) e **vida nos pets**
+      (balanço idle/andar, "pop" + partículas na habilidade, estrelinhas no atordoamento, estrelas animadas no resultado).
 
 Pendente / a aprimorar:
 

@@ -16,6 +16,7 @@ import type { FrameInput } from "../systems/InputManager";
 import { tryLoadModel } from "../utils/AssetLoader";
 import { buildPetModel } from "./PetModel";
 import { Audio } from "../systems/AudioManager";
+import { burst } from "../utils/Particles";
 
 /** Ganchos que a fase fornece para as habilidades afetarem o mundo. */
 export interface AbilityHooks {
@@ -30,6 +31,8 @@ const PLAYER_HEIGHT = 1.2;
 const FEET_OFFSET = -(PLAYER_HEIGHT / 2 + PLAYER_RADIUS);
 /** altura-alvo para auto-escalar qualquer GLB importado */
 const TARGET_VISUAL_HEIGHT = 2.0;
+/** duração do "pop" de escala ao usar a habilidade */
+const POP_DUR = 0.35;
 
 /**
  * Classe base dos pets.
@@ -71,6 +74,10 @@ export class Player {
   protected abilityActiveFor = 0;
   /** tempo até o próximo passo (s); ritmo acompanha a velocidade efetiva */
   private stepTimer = 0;
+  /** acumulador para o balanço de idle/andar */
+  private animTime = Math.random() * 10;
+  /** tempo restante do "pop" de habilidade */
+  private popT = 0;
 
   constructor(
     scene: Scene,
@@ -175,6 +182,15 @@ export class Player {
   }
 
   stun(seconds: number): void {
+    if (this.stunnedFor <= 0) {
+      // estrelinhas só na transição (evita spam enquanto já atordoado)
+      burst(this.scene, this.position.add(new Vector3(0, 1.2, 0)), "#FFD166", {
+        count: 6,
+        size: 0.1,
+        speed: 2.2,
+        gravity: 2,
+      });
+    }
     this.stunnedFor = Math.max(this.stunnedFor, seconds);
   }
 
@@ -224,6 +240,8 @@ export class Player {
 
       if (input.ability && this.cooldownRemaining <= 0) {
         this.cooldownRemaining = this.def.cooldown;
+        this.popT = POP_DUR;
+        burst(this.scene, this.position, this.def.color, { count: 8, size: 0.14 });
         this.onAbilityStart();
       }
     }
@@ -233,8 +251,36 @@ export class Player {
     if (moving) {
       this.visualRoot.rotation.y = Math.atan2(this.facing.x, this.facing.z);
     }
+    this.updateLiveliness(moving, dt);
     this.updateSteps(moving, dt);
     this.updateAnim(moving);
+  }
+
+  /** Balanço de idle/andar + "pop" de habilidade (vida nos pets, todas as fases). */
+  private updateLiveliness(moving: boolean, dt: number): void {
+    this.animTime += dt;
+    let bobY = 0;
+    let sx = 1;
+    let sy = 1;
+    if (moving) {
+      // saltitar sincronizado com o passo + leve squash/stretch
+      const ph = this.animTime * this.def.speed * this.speedMultiplier * 1.4;
+      bobY = Math.abs(Math.sin(ph)) * 0.12;
+      sy = 1 + Math.sin(ph * 2) * 0.05;
+      sx = 1 - Math.sin(ph * 2) * 0.05;
+    } else {
+      // respiração sutil
+      bobY = Math.sin(this.animTime * 2) * 0.03;
+      sy = 1 + Math.sin(this.animTime * 2) * 0.02;
+    }
+    if (this.popT > 0) {
+      this.popT -= dt;
+      const s = 1 + Math.sin((this.popT / POP_DUR) * Math.PI) * 0.25;
+      sx *= s;
+      sy *= s;
+    }
+    this.visualRoot.position.y += bobY;
+    this.visualRoot.scaling.set(sx, sy, sx);
   }
 
   /** Toca passos no ritmo da velocidade efetiva enquanto o pet anda. */
