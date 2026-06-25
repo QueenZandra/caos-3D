@@ -61,6 +61,11 @@ export class OptionsScene implements SceneController {
         () => Audio.volumes.sfx,
         (v) => Audio.setSfxVolume(v),
       ),
+      this.makeVolume(
+        "🕹️  Sensibilidade (toque)",
+        () => this.game.input.sensitivity,
+        (v) => this.game.input.setSensitivity(v),
+      ),
       this.makeRow("🔇  Mudo", "toggle", {
         toggle: () => Audio.toggleMute(),
         state: () => (Audio.isMuted ? "Sim" : "Não"),
@@ -70,7 +75,7 @@ export class OptionsScene implements SceneController {
     ];
 
     // a linha de reset gerencia seu próprio texto (confirmação em 2 passos)
-    this.resetRow = this.rows[4];
+    this.resetRow = this.rows.find((r) => r.label.includes("Zerar"))!;
     this.resetRow.action = () => this.handleReset();
 
     this.rows.forEach((r, i) => {

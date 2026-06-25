@@ -54,6 +54,19 @@ export class InputManager {
   private prevPadButtons: Record<number, boolean[]> = {};
   private curPadButtons: Record<number, boolean[]> = {};
 
+  // ─── toque (mobile) ───────────────────────────────────────────
+  /** botões de toque atualmente pressionados (interact/ability/drop/joint/pause/back) */
+  private touch = new Set<string>();
+  private prevTouch = new Set<string>();
+  /** vetor do joystick virtual já normalizado (−1..1; y+ = frente) */
+  private touchMove = { x: 0, y: 0 };
+  private touchNavX = 0;
+  private touchNavY = 0;
+  private prevBeyondX = 0;
+  private prevBeyondY = 0;
+  /** sensibilidade do joystick (0..1), persistida */
+  private touchSensitivity = InputManager.loadSens();
+
   constructor() {
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
@@ -89,6 +102,59 @@ export class InputManager {
       if (!pad) continue;
       this.curPadButtons[pad.index] = pad.buttons.map((b) => b.pressed);
     }
+
+    // toque: snapshot p/ edges + bordas de navegação do joystick em menus
+    this.prevTouch = new Set(this.touch);
+    const bx = Math.abs(this.touchMove.x) > 0.5 ? Math.sign(this.touchMove.x) : 0;
+    const by = Math.abs(this.touchMove.y) > 0.5 ? Math.sign(this.touchMove.y) : 0;
+    this.touchNavX = bx !== 0 && bx !== this.prevBeyondX ? bx : 0;
+    this.touchNavY = by !== 0 && by !== this.prevBeyondY ? by : 0;
+    this.prevBeyondX = bx;
+    this.prevBeyondY = by;
+  }
+
+  // ─── Toque (API usada pela TouchControls) ───────────────────
+  private static loadSens(): number {
+    try {
+      const v = Number(localStorage.getItem("caos_touch_sens"));
+      return Number.isFinite(v) && v > 0 ? Math.max(0, Math.min(1, v)) : 0.6;
+    } catch {
+      return 0.6;
+    }
+  }
+  get sensitivity(): number {
+    return this.touchSensitivity;
+  }
+  setSensitivity(v: number): void {
+    this.touchSensitivity = Math.max(0, Math.min(1, v));
+    try {
+      localStorage.setItem("caos_touch_sens", String(this.touchSensitivity));
+    } catch {
+      /* ignore */
+    }
+  }
+  /** Define o vetor do joystick (já normalizado pela UI). */
+  setTouchMove(x: number, y: number): void {
+    this.touchMove.x = x;
+    this.touchMove.y = y;
+  }
+  touchPress(name: string): void {
+    this.touch.add(name);
+  }
+  touchRelease(name: string): void {
+    this.touch.delete(name);
+  }
+  private touchEdge(name: string): boolean {
+    return this.touch.has(name) && !this.prevTouch.has(name);
+  }
+  /** Mescla o toque no input do P1 (slot 0). */
+  private applyTouch(fi: FrameInput): void {
+    fi.moveX = Math.max(-1, Math.min(1, fi.moveX + this.touchMove.x));
+    fi.moveY = Math.max(-1, Math.min(1, fi.moveY + this.touchMove.y));
+    fi.interact ||= this.touchEdge("interact");
+    fi.ability ||= this.touchEdge("ability");
+    fi.drop ||= this.touchEdge("drop");
+    fi.joint ||= this.touchEdge("joint");
   }
 
   private getGamepads(): (Gamepad | null)[] {
@@ -147,14 +213,21 @@ export class InputManager {
    */
   pauseEdge(): boolean {
     if (this.keyEdge("Escape")) return true;
+    if (this.touchEdge("pause")) return true;
     for (const idx of this.connectedPads()) {
       if (this.padEdge(idx, BUTTON.START)) return true;
     }
     return false;
   }
 
-  /** Input de um slot de jogador (gameplay). */
+  /** Input de um slot de jogador (gameplay). O P1 (slot 0) recebe o toque. */
   getInput(slot: PlayerSlot): FrameInput {
+    const fi = this.slotInput(slot);
+    if (slot.index === 0) this.applyTouch(fi);
+    return fi;
+  }
+
+  private slotInput(slot: PlayerSlot): FrameInput {
     switch (slot.inputKind) {
       case "keyboard-wasd":
         return this.keyboardInput(
@@ -261,6 +334,12 @@ export class InputManager {
       out.drop ||= g.drop;
       out.pause ||= g.pause;
     }
+
+    // toque (joystick vira navegação; botões A/B viram confirmar/voltar)
+    out.navX += this.touchNavX;
+    out.navY += this.touchNavY;
+    out.interact ||= this.touchEdge("interact");
+    out.drop ||= this.touchEdge("drop") || this.touchEdge("back");
 
     out.navX = Math.sign(out.navX);
     out.navY = Math.sign(out.navY);

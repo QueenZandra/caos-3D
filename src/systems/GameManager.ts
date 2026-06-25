@@ -6,6 +6,7 @@ import { initPhysics } from "./PhysicsSystem";
 import { Audio } from "./AudioManager";
 import type { SceneController } from "../scenes/SceneController";
 import { PauseMenu } from "../ui/PauseMenu";
+import { TouchControls } from "../ui/TouchControls";
 
 import { MenuScene } from "../scenes/MenuScene";
 import { PlayerCountScene } from "../scenes/PlayerCountScene";
@@ -39,6 +40,7 @@ export class GameManager {
   private pauseMenu: PauseMenu | null = null;
   private fade: HTMLElement | null = null;
   private transitioning = false;
+  private touch: TouchControls;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -49,6 +51,7 @@ export class GameManager {
     });
     this.input = new InputManager();
     this.fade = document.getElementById("fade");
+    this.touch = new TouchControls(this.input);
 
     window.addEventListener("resize", () => this.engine.resize());
 
@@ -159,6 +162,8 @@ export class GameManager {
     // ambiência específica da fase (pássaros, rua, cozinha…); silêncio nos menus
     if (inPhase) Audio.ambientForPhase(Number(state.slice(5)));
     else Audio.ambient(null);
+    // controles de toque: ações de gameplay nas fases, confirmar/voltar nos menus
+    this.touch.setContext(inPhase ? "phase" : "menu");
   }
 
   private build(state: GameState): SceneController {

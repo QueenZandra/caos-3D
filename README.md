@@ -51,6 +51,9 @@ npm run format        # Prettier --write em src
 - Tipo de gamepad (PlayStation / Xbox / genérico) é detectado pelo `id` do dispositivo.
 - **Pausa real**: Esc/Start abre o menu de pausa (Retomar / Reiniciar fase / Menu),
   congelando física e lógica enquanto aberto.
+- **Toque (mobile)**: em telas de toque aparecem um **joystick virtual** (esquerda) e
+  **botões de ação/pausa** (direita); controla o P1 e navega os menus. A
+  **sensibilidade** do joystick é ajustável em ⚙️ Opções.
 
 ## 🕹️ Campanha (8 fases)
 
@@ -228,14 +231,15 @@ Feito:
       (balanço idle/andar, "pop" + partículas na habilidade, estrelinhas no atordoamento, estrelas animadas no resultado).
 - [x] **Sistema de escalada** (Fase 2): gatos sobem os arbustos altos (movimento
       cinemático pela lateral) para alcançar e destruir os ninhos no topo.
+- [x] **Controles de toque** (mobile): joystick virtual flutuante + botões de ação/pausa,
+      com **sensibilidade** ajustável nas Opções; navega menus e joga as fases.
 
 Pendente / a aprimorar:
 
 - [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender →
       Mixamo) — referências e prompts em `public/assets/models/characters/*.reference.md`.
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
-- [ ] **Controles de toque** (mobile) e acessibilidade (remapeamento, reduzir
-      shake/flash, daltonismo).
+- [ ] Acessibilidade: remapeamento de teclas, reduzir shake/flash, modo daltônico.
 - [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).
 
 ## 🚀 Deploy
