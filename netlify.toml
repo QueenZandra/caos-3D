@@ -1,0 +1,16 @@
+# Deploy no Netlify (https://www.netlify.com)
+# Passo a passo: "Add new site" → "Import an existing project" → conecte o
+# repositório do GitHub. O Netlify lê este arquivo e publica sozinho a cada push.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# garante o tipo correto do WebAssembly do Havok (física)
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"

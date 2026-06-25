@@ -245,8 +245,35 @@ Pendente / a aprimorar:
 - [ ] **Remapeamento** de teclas/botões.
 - [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).
 
-## 🚀 Deploy
+## 🚀 Deploy (colocar o jogo no ar)
 
-`npm run build` gera `/dist` estático (inclui o `HavokPhysics.wasm`). Publique em
-Netlify, Vercel ou GitHub Pages. Em servidores que exigem, configure o
-`Content-Type: application/wasm` para o `.wasm`.
+O jogo é um site estático: `npm run build` gera a pasta `/dist` (já com o
+`HavokPhysics.wasm`). Há três caminhos prontos — escolha **um**.
+
+### Opção A — GitHub Pages (automático, recomendado)
+
+Já existe o workflow `.github/workflows/deploy.yml`, que publica sozinho a cada
+push. Para ligar (só uma vez):
+
+1. No GitHub, abra **Settings → Pages**.
+2. Em **Build and deployment → Source**, escolha **GitHub Actions**.
+3. Pronto: a cada push o site é reconstruído. O link aparece em **Settings →
+   Pages** (algo como `https://<seu-usuario>.github.io/caos-3d/`).
+
+### Opção B — Netlify
+
+1. Crie conta em [netlify.com](https://www.netlify.com).
+2. **Add new site → Import an existing project** e conecte o repositório.
+3. O `netlify.toml` já define tudo (build `npm run build`, pasta `dist`). É só
+   confirmar. O Netlify gera um link e republica a cada push.
+
+### Opção C — Vercel
+
+1. Crie conta em [vercel.com](https://vercel.com).
+2. **Add New → Project** e importe o repositório.
+3. O `vercel.json` já configura build e pasta de saída. Confirme e publique.
+
+> **Física (Havok):** os três caminhos servem o arquivo `.wasm` com o tipo
+> correto (`application/wasm`) — Netlify e Vercel via os arquivos de config; o
+> GitHub Pages já entrega `.wasm` corretamente por padrão.
+
