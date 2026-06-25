@@ -1,5 +1,7 @@
 import HavokPhysics from "@babylonjs/havok";
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
+// registra scene.enablePhysics / scene.getPhysicsEngine no protótipo de Scene
+import "@babylonjs/core/Physics/physicsEngineComponent";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 

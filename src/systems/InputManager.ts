@@ -47,8 +47,12 @@ const EMPTY: FrameInput = {
  * (antes de qualquer consumidor) para calcular as bordas de "just pressed".
  */
 export class InputManager {
+  /** teclas fisicamente pressionadas (para movimento contínuo) */
   private keys = new Set<string>();
-  private prevKeys = new Set<string>();
+  /** keydowns acumulados desde o último update (borda) */
+  private keyEdgeBuffer = new Set<string>();
+  /** bordas de tecla expostas neste frame */
+  private keyEdges = new Set<string>();
 
   // estado anterior de botões por gamepad, p/ detectar edges
   private prevPadButtons: Record<number, boolean[]> = {};
@@ -57,7 +61,10 @@ export class InputManager {
   // ─── toque (mobile) ───────────────────────────────────────────
   /** botões de toque atualmente pressionados (interact/ability/drop/joint/pause/back) */
   private touch = new Set<string>();
-  private prevTouch = new Set<string>();
+  /** presses de toque acumulados desde o último update (borda) */
+  private touchEdgeBuffer = new Set<string>();
+  /** bordas de toque expostas neste frame */
+  private touchEdges = new Set<string>();
   /** vetor do joystick virtual já normalizado (−1..1; y+ = frente) */
   private touchMove = { x: 0, y: 0 };
   private touchNavX = 0;
@@ -80,6 +87,8 @@ export class InputManager {
   }
 
   private onKeyDown = (e: KeyboardEvent) => {
+    // só registra a borda na descida real (ignora o auto-repeat do navegador)
+    if (!this.keys.has(e.code)) this.keyEdgeBuffer.add(e.code);
     this.keys.add(e.code);
     // evita rolagem da página com setas/espaço
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
@@ -93,7 +102,9 @@ export class InputManager {
 
   /** Captura o snapshot do frame. Deve rodar antes de getInput/menu reads. */
   update(): void {
-    this.prevKeys = new Set(this.keys);
+    // expõe as bordas acumuladas desde o último frame e zera o acumulador
+    this.keyEdges = this.keyEdgeBuffer;
+    this.keyEdgeBuffer = new Set();
 
     const pads = this.getGamepads();
     this.prevPadButtons = this.curPadButtons;
@@ -103,8 +114,9 @@ export class InputManager {
       this.curPadButtons[pad.index] = pad.buttons.map((b) => b.pressed);
     }
 
-    // toque: snapshot p/ edges + bordas de navegação do joystick em menus
-    this.prevTouch = new Set(this.touch);
+    // toque: bordas acumuladas + bordas de navegação do joystick em menus
+    this.touchEdges = this.touchEdgeBuffer;
+    this.touchEdgeBuffer = new Set();
     const bx = Math.abs(this.touchMove.x) > 0.5 ? Math.sign(this.touchMove.x) : 0;
     const by = Math.abs(this.touchMove.y) > 0.5 ? Math.sign(this.touchMove.y) : 0;
     this.touchNavX = bx !== 0 && bx !== this.prevBeyondX ? bx : 0;
@@ -139,13 +151,14 @@ export class InputManager {
     this.touchMove.y = y;
   }
   touchPress(name: string): void {
+    if (!this.touch.has(name)) this.touchEdgeBuffer.add(name); // borda na descida
     this.touch.add(name);
   }
   touchRelease(name: string): void {
     this.touch.delete(name);
   }
   private touchEdge(name: string): boolean {
-    return this.touch.has(name) && !this.prevTouch.has(name);
+    return this.touchEdges.has(name);
   }
   /** Mescla o toque no input do P1 (slot 0). */
   private applyTouch(fi: FrameInput): void {
@@ -166,7 +179,7 @@ export class InputManager {
     return this.keys.has(code);
   }
   private keyEdge(code: string): boolean {
-    return this.keys.has(code) && !this.prevKeys.has(code);
+    return this.keyEdges.has(code);
   }
 
   // ─── Gamepad ────────────────────────────────────────────────
