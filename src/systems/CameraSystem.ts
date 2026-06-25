@@ -121,6 +121,7 @@ export class CameraSystem {
    * suavemente ao enquadramento normal (entra e sai com curva senoidal).
    */
   focus(point: Vector3, seconds: number, radius = CAMERA.radius * 0.6): void {
+    if (Settings.reduceMotion) return; // acessibilidade: sem zoom dramático
     this.focusPoint.copyFrom(point);
     this.focusDur = seconds;
     this.focusT = seconds;
