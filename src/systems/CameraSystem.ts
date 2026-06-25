@@ -4,6 +4,7 @@ import { Scalar } from "@babylonjs/core/Maths/math.scalar";
 import { Viewport } from "@babylonjs/core/Maths/math.viewport";
 import type { Scene } from "@babylonjs/core/scene";
 import { CAMERA, UI_LAYER } from "../utils/Constants";
+import { Settings } from "../utils/Settings";
 
 const FULL_VIEWPORT = new Viewport(0, 0, 1, 1);
 const LEFT_VIEWPORT = new Viewport(0, 0, 0.5, 1);
@@ -109,6 +110,7 @@ export class CameraSystem {
 
   /** Dispara um tremor de câmera (ex.: puff batendo na parede). */
   shake(magnitude: number, duration: number): void {
+    if (Settings.reduceMotion) return; // acessibilidade: sem tremor
     this.shakeMag = Math.max(this.shakeMag, magnitude);
     this.shakeDur = duration;
     this.shakeT = duration;

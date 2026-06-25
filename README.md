@@ -233,13 +233,15 @@ Feito:
       cinemático pela lateral) para alcançar e destruir os ninhos no topo.
 - [x] **Controles de toque** (mobile): joystick virtual flutuante + botões de ação/pausa,
       com **sensibilidade** ajustável nas Opções; navega menus e joga as fases.
+- [x] **Acessibilidade**: "reduzir efeitos" (corta shake/flash e reduz partículas) e
+      "alto contraste" (contornos pretos reforçados), nas Opções.
 
 Pendente / a aprimorar:
 
 - [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender →
       Mixamo) — referências e prompts em `public/assets/models/characters/*.reference.md`.
 - [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
-- [ ] Acessibilidade: remapeamento de teclas, reduzir shake/flash, modo daltônico.
+- [ ] **Remapeamento** de teclas/botões.
 - [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).
 
 ## 🚀 Deploy

@@ -2,6 +2,7 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { Settings } from "./Settings";
 
 /**
  * Material "toon" simples: cor chapada, brilho baixo e um pouco de emissive
@@ -21,6 +22,7 @@ export function createToonMaterial(scene: Scene, hex: string, name = "toon"): St
 /** Adiciona o contorno cartoon preto (ou cor custom) ao mesh. */
 export function applyOutline(mesh: Mesh, width = 0.04, hex = "#1A1A2E"): void {
   mesh.renderOutline = true;
-  mesh.outlineWidth = width;
-  mesh.outlineColor = Color3.FromHexString(hex);
+  // alto contraste: contorno preto e mais grosso (baixa visão / daltonismo)
+  mesh.outlineWidth = Settings.highContrast ? width * 1.9 : width;
+  mesh.outlineColor = Color3.FromHexString(Settings.highContrast ? "#000000" : hex);
 }

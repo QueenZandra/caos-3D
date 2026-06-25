@@ -4,6 +4,7 @@ import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import type { Scene } from "@babylonjs/core/scene";
+import { Settings } from "./Settings";
 
 export interface BurstOptions {
   /** número de fragmentos */
@@ -25,7 +26,8 @@ export interface BurstOptions {
  * disparar em qualquer evento — pegar, entregar, quebrar).
  */
 export function burst(scene: Scene, position: Vector3, hex: string, opts: BurstOptions = {}): void {
-  const count = opts.count ?? 8;
+  // acessibilidade: menos partículas com "reduzir efeitos"
+  const count = Math.max(2, Math.round((opts.count ?? 8) * (Settings.reduceMotion ? 0.4 : 1)));
   const size = opts.size ?? 0.16;
   const speed = opts.speed ?? 4;
   const maxLife = opts.life ?? 0.55;

@@ -9,6 +9,7 @@ import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Player } from "../entities/Player";
 import { UI_LAYER, PALETTE } from "../utils/Constants";
+import { Settings } from "../utils/Settings";
 
 interface FloatText {
   text: TextBlock;
@@ -258,7 +259,10 @@ export class HUD {
     this.chaosFill.background = opts.barWarn || opts.bar > 0.66 ? "#FF4D8D" : "#FF6B35";
 
     if (this.dangerOverlay?.isVisible) {
-      this.dangerOverlay.alpha = 0.12 + 0.14 * (Math.sin(performance.now() * 0.008) + 1) * 0.5;
+      // acessibilidade: sem pulsação (flash) quando "reduzir efeitos" está ligado
+      this.dangerOverlay.alpha = Settings.reduceMotion
+        ? 0.16
+        : 0.12 + 0.14 * (Math.sin(performance.now() * 0.008) + 1) * 0.5;
     }
 
     this.updateObjectiveArrow();

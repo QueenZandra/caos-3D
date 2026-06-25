@@ -9,6 +9,7 @@ import type { SceneController } from "./SceneController";
 import { GameState, PALETTE } from "../utils/Constants";
 import { Audio } from "../systems/AudioManager";
 import { Progress } from "../utils/Progress";
+import { Settings } from "../utils/Settings";
 import { createMenuScene, addTitle } from "./menuHelpers";
 
 type RowKind = "volume" | "toggle" | "action";
@@ -70,6 +71,14 @@ export class OptionsScene implements SceneController {
         toggle: () => Audio.toggleMute(),
         state: () => (Audio.isMuted ? "Sim" : "Não"),
       }),
+      this.makeRow("♿  Reduzir efeitos", "toggle", {
+        toggle: () => Settings.toggleReduceMotion(),
+        state: () => (Settings.reduceMotion ? "Sim" : "Não"),
+      }),
+      this.makeRow("🎨  Alto contraste", "toggle", {
+        toggle: () => Settings.toggleHighContrast(),
+        state: () => (Settings.highContrast ? "Sim" : "Não"),
+      }),
       this.makeRow("🗑️  Zerar progresso", "action", {}),
       this.makeRow("⬅️  Voltar", "action", { action: () => this.game.goTo(GameState.Menu) }),
     ];
@@ -79,7 +88,7 @@ export class OptionsScene implements SceneController {
     this.resetRow.action = () => this.handleReset();
 
     this.rows.forEach((r, i) => {
-      r.container.top = `${(i - (this.rows.length - 1) / 2) * 70 + 10}px`;
+      r.container.top = `${(i - (this.rows.length - 1) / 2) * 56 + 16}px`;
     });
     this.refresh();
   }
@@ -91,7 +100,7 @@ export class OptionsScene implements SceneController {
   private makeRow(label: string, kind: RowKind, opts: Partial<OptRow>): OptRow {
     const container = new Rectangle(`opt_${label}`);
     container.width = "520px";
-    container.height = "58px";
+    container.height = "48px";
     container.cornerRadius = 14;
     container.thickness = 3;
     container.background = "#FFFFFF14";

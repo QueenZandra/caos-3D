@@ -20,6 +20,7 @@ import { tryLoadModel } from "../utils/AssetLoader";
 import { buildPetModel } from "./PetModel";
 import { Audio } from "../systems/AudioManager";
 import { burst } from "../utils/Particles";
+import { Settings } from "../utils/Settings";
 
 /** Ganchos que a fase fornece para as habilidades afetarem o mundo. */
 export interface AbilityHooks {
@@ -391,7 +392,8 @@ export class Player {
   private flashStun(): void {
     const mat = this.placeholder.material as { emissiveColor?: Color3 } | null;
     if (mat?.emissiveColor) {
-      const t = (Math.sin(performance.now() * 0.02) + 1) * 0.5;
+      // acessibilidade: tinta estável (sem piscar) com "reduzir efeitos"
+      const t = Settings.reduceMotion ? 0.5 : (Math.sin(performance.now() * 0.02) + 1) * 0.5;
       mat.emissiveColor = Color3.FromHexString(this.def.color).scale(0.2 + t * 0.4);
     }
   }
