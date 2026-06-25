@@ -13,6 +13,7 @@ import { PlayerCountScene } from "../scenes/PlayerCountScene";
 import { CharSelectScene } from "../scenes/CharSelectScene";
 import { PhaseSelectScene } from "../scenes/PhaseSelectScene";
 import { OptionsScene } from "../scenes/OptionsScene";
+import { TutorialScene } from "../scenes/TutorialScene";
 import { Phase1Scene } from "../scenes/Phase1Scene";
 import { Phase2Scene } from "../scenes/Phase2Scene";
 import { Phase3Scene } from "../scenes/Phase3Scene";
@@ -156,14 +157,15 @@ export class GameManager {
     this.current?.dispose();
     this.current = this.build(state);
     this.activeState = state;
-    // trilha conforme o contexto: fases = gameplay; menus/resultado = calmo
+    // trilha conforme o contexto: fases/tutorial = gameplay; menus = calmo
     const inPhase = state.startsWith("phase");
-    Audio.music(inPhase ? "gameplay" : "menu");
-    // ambiência específica da fase (pássaros, rua, cozinha…); silêncio nos menus
+    const gameplay = inPhase || state === GameState.Tutorial;
+    Audio.music(gameplay ? "gameplay" : "menu");
+    // ambiência específica da fase (pássaros, rua, cozinha…); silêncio fora delas
     if (inPhase) Audio.ambientForPhase(Number(state.slice(5)));
     else Audio.ambient(null);
-    // controles de toque: ações de gameplay nas fases, confirmar/voltar nos menus
-    this.touch.setContext(inPhase ? "phase" : "menu");
+    // controles de toque: ações de gameplay nas fases/tutorial, confirmar/voltar nos menus
+    this.touch.setContext(gameplay ? "phase" : "menu");
   }
 
   private build(state: GameState): SceneController {
@@ -178,6 +180,8 @@ export class GameManager {
         return new PhaseSelectScene(this);
       case GameState.Options:
         return new OptionsScene(this);
+      case GameState.Tutorial:
+        return new TutorialScene(this);
       case GameState.Phase1:
         return new Phase1Scene(this);
       case GameState.Phase2:

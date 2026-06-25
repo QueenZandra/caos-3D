@@ -235,12 +235,13 @@ Feito:
       com **sensibilidade** ajustável nas Opções; navega menus e joga as fases.
 - [x] **Acessibilidade**: "reduzir efeitos" (corta shake/flash e reduz partículas) e
       "alto contraste" (contornos pretos reforçados), nas Opções.
+- [x] **Tutorial guiado** ("❓ Como jogar"): mover → pegar → entregar → habilidade, passo a passo.
 
 Pendente / a aprimorar:
 
 - [ ] Gerar de fato os 4 modelos a partir das fotos dos pets (Meshy.ai → Blender →
       Mixamo) — referências e prompts em `public/assets/models/characters/*.reference.md`.
-- [ ] **Tutorial/onboarding** e **cutscenes** (`CinematicScene`).
+- [ ] **Cutscenes** narrativas (`CinematicScene`).
 - [ ] **Remapeamento** de teclas/botões.
 - [ ] Ampliar a cobertura de **testes** (hoje cobre Progress e DifficultyScaler).
 

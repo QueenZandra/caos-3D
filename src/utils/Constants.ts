@@ -27,6 +27,7 @@ export enum GameState {
   CharSelect = "char_select",
   LevelSelect = "level_select",
   Options = "options",
+  Tutorial = "tutorial",
   Phase1 = "phase1",
   Phase2 = "phase2",
   Phase3 = "phase3",
