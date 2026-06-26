@@ -61,12 +61,14 @@ export class HUD {
     this.dangerOverlay.isPointerBlocker = false;
     this.ui.addControl(this.dangerOverlay);
 
-    // timer (topo centro)
+    // timer (topo centro). resizeToFit: sem isso o TextBlock ocupa a tela toda
+    // e o texto centraliza no meio (ficava sobre os pets).
     this.timer = new TextBlock();
     this.timer.text = "90";
     this.timer.color = "#FFFFFF";
     this.timer.fontSize = 40;
     this.timer.fontWeight = "900";
+    this.timer.resizeToFit = true;
     this.timer.top = "20px";
     this.timer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
     this.ui.addControl(this.timer);
@@ -77,6 +79,7 @@ export class HUD {
     this.objective.color = "#FFD166";
     this.objective.fontSize = 20;
     this.objective.fontWeight = "800";
+    this.objective.resizeToFit = true;
     this.objective.top = "66px";
     this.objective.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
     this.ui.addControl(this.objective);
@@ -105,6 +108,7 @@ export class HUD {
     const chaosLabel = new TextBlock();
     chaosLabel.text = "🔥";
     chaosLabel.fontSize = 20;
+    chaosLabel.resizeToFit = true;
     chaosLabel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
     chaosLabel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
     chaosLabel.left = "-22px";
